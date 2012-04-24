@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="key_pref_softyuv">key_pref_softyuv</string>
+	<string name="key_pref_server">key_pref_servver</string>
+	<string name="key_pref_local_port">key_pref_local_port</string>
+	<string name="key_pref_client">key_pref_client</string>
+	<string name="key_pref_remote_addr">key_pref_remote_addr</string>
+	<string name="key_pref_remote_port">key_pref_remote_port</string>
+    
+    <string name="hello">Hello World, CameraProcessingTestActivity!</string>
+    <string name="app_name">CameraProcessingTest</string>
+    <string name="help_softyuv">Capture video in YUV format and convert to RGB. Use when you are experiencing problems and your device does not support RGB streaming</string>
+	<string name="streaming_on">Streaming</string>
+    <string name="streaming_off">Not Streaming</string>
+    <string name="frontcam_on">Front Camera</string>
+    <string name="frontcam_off">Rear Camera</string>
+    <string name="preferences">Preferences</string>
+    <string name="device_preferences">Device Preferences</string>
+    <string name="softyuv">Software YUV2RGB</string>
+    
+    <string name="tcp_preferences">TCP/IP Preferences</string>
+    <string name="start_tcp_server">TCP Server</string>
+    <string name="help_start_tcp_server">Stream video over TCP/IP using application own protocol</string>
+	<string name="local_port">Local TCP port</string>
+	<string name="help_local_port">Select the TCP port on which the video will be streamed</string>
+	<string name="remote_addr">Remote server address</string>
+	<string name="help_remote_addr">The address of the remote device streaming video to connect to</string>
+	<string name="start_tcp_client">TCP Client</string>
+    <string name="help_start_tcp_client">Connect to the remote device streaming video to view it locally</string>
+	<string name="remote_port">Remote TCP port</string>
+	<string name="help_remote_port">Select the TCP port on which the video is streamed on the remote device</string>
+</resources>

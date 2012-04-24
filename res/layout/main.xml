@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <TabHost
+        android:id="@android:id/tabhost"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+
+            <TabWidget
+                android:id="@android:id/tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+            </TabWidget>
+
+            <FrameLayout
+                android:id="@android:id/tabcontent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <LinearLayout
+                    android:id="@+id/tab1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical" >
+
+                    <LinearLayout
+                        android:id="@+id/controls"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <LinearLayout
+                            android:id="@+id/switches"
+                            android:layout_height="wrap_content"
+                            android:layout_width="wrap_content"
+                            android:orientation="vertical">
+		                   <ToggleButton
+		                        android:id="@+id/switch_streaming"
+		                        android:layout_width="wrap_content"
+		                        android:layout_height="wrap_content"
+		                        android:textOn="@string/streaming_on"
+		                        android:textOff="@string/streaming_off"
+		                        />
+		                   <ToggleButton
+		                       	android:id="@+id/switch_camera"
+		                       	android:layout_width="wrap_content"
+		                       	android:layout_height="wrap_content"
+		                       	android:textOn="@string/frontcam_on"
+		                       	android:textOff="@string/frontcam_off"
+		                       	/>
+	                    </LinearLayout>
+						<Button 
+	                        android:id="@+id/pref_button"
+	                        android:layout_width="wrap_content"
+	                        android:layout_height="wrap_content"
+	                        android:text="@string/preferences"
+	                        />
+                    </LinearLayout>
+                    <LinearLayout 
+                        android:orientation="vertical"
+                        android:layout_height="fill_parent"
+                        android:layout_width="fill_parent"
+                        >
+						<VideoView
+	                        android:id="@+id/view_local"
+	                        android:layout_width="match_parent"
+	                        android:layout_height="match_parent"
+	                        android:layout_weight="1" />
+	                    <VideoView
+	                        android:id="@+id/view_remote"
+	                        android:layout_width="match_parent"
+	                        android:layout_height="match_parent"
+	                        android:layout_weight="1" />
+                    </LinearLayout>                   
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/tab2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" >
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/tab3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" >
+                </LinearLayout>
+            </FrameLayout>
+        </LinearLayout>
+    </TabHost>
+
+</LinearLayout>

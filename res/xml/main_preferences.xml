@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+	<PreferenceCategory android:title="@string/device_preferences">
+		<CheckBoxPreference
+			android:key="@string/key_pref_softyuv"
+			android:title="@string/softyuv"
+			android:defaultValue="false"
+			android:summary="@string/help_softyuv"
+		/>
+	</PreferenceCategory>
+	<PreferenceCategory android:title="@string/tcp_preferences">
+		<CheckBoxPreference
+		    android:key="@string/key_pref_server"
+		    android:title="@string/start_tcp_server"
+		    android:defaultValue="true"
+		    android:summary="@string/help_start_tcp_server"
+		    />
+		<EditTextPreference
+		    android:key="@string/key_pref_local_port"
+		    android:title="@string/local_port"
+		    android:defaultValue="45678"
+		    android:summary="@string/help_local_port"/>
+		<CheckBoxPreference
+		    android:key="@string/key_pref_client"
+		    android:title="@string/start_tcp_client"
+		    android:defaultValue="true"
+		    android:summary="@string/help_start_tcp_client"
+		    />
+		<EditTextPreference
+		    android:key="@string/key_pref_remote_addr"
+		    android:title="@string/remote_addr"
+		    android:defaultValue="127.0.0.1"
+		    android:summary="@string/help_remote_addr"/>
+		<EditTextPreference
+		    android:key="@string/key_pref_remote_port"
+		    android:title="@string/remote_port"
+		    android:defaultValue="45678"
+		    android:summary="@string/help_remote_port"/>
+	</PreferenceCategory>
+</PreferenceScreen>
