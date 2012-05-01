@@ -37,7 +37,7 @@ public class TcpUnicastServer implements ImageSink {
 	}
 
 	@Override
-	public void send(Bitmap bitmap) throws Exception {
+	public void send(Bitmap bitmap) {
 		final Bitmap bmp = bitmap;
 		new Thread() {
 			@Override
