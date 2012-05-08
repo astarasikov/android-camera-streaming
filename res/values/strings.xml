@@ -15,6 +15,9 @@
     <string name="frontcam_on">Front Camera</string>
     <string name="frontcam_off">Rear Camera</string>
     <string name="preferences">Preferences</string>
+    <string name="focus">Focus Camera</string>
+    
+    
     <string name="device_preferences">Device Preferences</string>
     <string name="softyuv">Software YUV2RGB</string>
     

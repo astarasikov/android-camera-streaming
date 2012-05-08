@@ -1,4 +1,4 @@
-package my.test;
+package my.test.image;
 
 public class ImageUtils {
 	

@@ -1,10 +1,15 @@
-package my.test;
+package my.test.image;
 
 import java.util.Arrays;
 
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.PointF;
+import android.graphics.Typeface;
 import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
 
@@ -172,9 +177,43 @@ public class ImageProcessing {
 		//	rgb[i] = 0xff000000 | ~(rgb[i] & 0xffffff);
 		//}
 		//Convolve2D(Kernel2D.Identity(), rgb, width, height);
-		Convolve2D(Kernel2D.Test(), rgb, width, height);
+		//Convolve2D(Kernel2D.Test(), rgb, width, height);
 	}
-	public static Bitmap process(Bitmap bitmap) {		
+	public static Bitmap process(Bitmap bitmap, int angle) {
+		int width = bitmap.getWidth();
+		int height = bitmap.getHeight();
+
+		//bitmap = bitmap.copy(Config.RGB_565, true);
+		Matrix m = new Matrix();
+		m.postRotate(angle);
+		bitmap = Bitmap.createBitmap(bitmap, 0, 0,
+				width, height, m, false);
+		
+		width = bitmap.getWidth();
+		height = bitmap.getHeight();
+		
+		Canvas c = new Canvas(bitmap);
+		c.rotate(angle);
+		
+		Paint paint = new Paint();
+		paint.setColor(Color.RED);
+		paint.setTextSize(20);
+		paint.setTypeface(Typeface.DEFAULT_BOLD);
+
+		
+		FaceDetector fd = new FaceDetector(width, height, 1);
+		Face faces[] = new Face[1];
+		int numFaces = fd.findFaces(bitmap, faces);
+		if (numFaces > 0) {
+			Face f = faces[0];
+			PointF pf = new PointF();
+			f.getMidPoint(pf);
+
+			c.drawRect(pf.x, pf.y, 10, 10, paint);
+		}
+		
+		c.drawText("Fuck yeah", 0, 0, paint);
+		
 		return bitmap;
 	}
 }

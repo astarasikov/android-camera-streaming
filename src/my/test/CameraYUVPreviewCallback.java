@@ -1,5 +1,6 @@
 package my.test;
 
+import my.test.image.ImageUtils;
 import android.hardware.Camera;
 
 public class CameraYUVPreviewCallback implements Camera.PreviewCallback,
@@ -12,16 +13,23 @@ public class CameraYUVPreviewCallback implements Camera.PreviewCallback,
 	synchronized void realloc(Camera cam) {
 		Camera.Size size = cam.getParameters().getPreviewSize();
 		int bufSize = size.width * size.height * 3;
-		if (rgbBuffer != null && rgbBuffer.length == bufSize) {
-			return;
+		int yuvSize = (bufSize * 3) / 2;
+		
+		boolean rgbIsGood = rgbBuffer != null && rgbBuffer.length == bufSize;
+		boolean yuvIsGood = yuvBuffer != null && yuvBuffer.length == yuvSize;
+		
+		if (!rgbIsGood) {
+			rgbBuffer = new int[bufSize];		
 		}
-		rgbBuffer = new int[bufSize];
-		yuvBuffer = new byte[bufSize * 2];
+		
+		if (!yuvIsGood) {
+			yuvBuffer = new byte[yuvSize];
+		}
 	}
 	
-	public CameraYUVPreviewCallback(Camera cam) {
-		realloc(cam);
-		cam.addCallbackBuffer(yuvBuffer);
+	public CameraYUVPreviewCallback(Camera camera) {
+		realloc(camera);
+		camera.addCallbackBuffer(yuvBuffer);
 	}
 	
 	@Override

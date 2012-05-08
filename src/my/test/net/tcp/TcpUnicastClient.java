@@ -1,4 +1,4 @@
-package my.test.net;
+package my.test.net.tcp;
 
 import java.net.Socket;
 

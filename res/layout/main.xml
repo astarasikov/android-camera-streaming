@@ -56,12 +56,24 @@
 		                       	android:textOff="@string/frontcam_off"
 		                       	/>
 	                    </LinearLayout>
+	                    <LinearLayout
+                            android:id="@+id/switches"
+                            android:layout_height="wrap_content"
+                            android:layout_width="wrap_content"
+                            android:orientation="vertical">
 						<Button 
 	                        android:id="@+id/pref_button"
 	                        android:layout_width="wrap_content"
 	                        android:layout_height="wrap_content"
 	                        android:text="@string/preferences"
 	                        />
+						<Button 
+						    android:id="@+id/focus_button"
+						    android:layout_width="wrap_content"
+						    android:layout_height="wrap_content"
+						    android:text="@string/focus"
+						    />
+						</LinearLayout>
                     </LinearLayout>
                     <LinearLayout 
                         android:orientation="vertical"

@@ -19,19 +19,34 @@
 package my.test;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
+import android.media.MediaRecorder;
+import android.os.StrictMode.ThreadPolicy;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.widget.VideoView;
 
+
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
-import my.test.net.TcpUnicastClient;
-import my.test.net.TcpUnicastServer;
+import javax.net.ssl.HttpsURLConnection;
 
-class CameraPreview implements SurfaceHolder.Callback {
+import my.test.image.ImageProcessing;
+import my.test.net.tcp.TcpUnicastClient;
+import my.test.net.tcp.TcpUnicastServer;
+
+class CameraServer implements SurfaceHolder.Callback {
 	// Stores hardware camera state
 
 	protected boolean mCameraOpened = false;
@@ -42,17 +57,31 @@ class CameraPreview implements SurfaceHolder.Callback {
 	protected boolean mUseFrontCamera = false;
 	Camera camera = null;
 	VideoView localView;
-	VideoView remoteView;
-	String remoteAddr;
 	
-	public CameraPreview(VideoView localView, VideoView remoteView,
-			String remoteAddr)
+	List<ImageSink> imageSinks = new LinkedList<ImageSink>();
+	
+	BlockingQueue<Runnable> sinkRunners =
+			new LinkedBlockingQueue<Runnable>();
+	ThreadPoolExecutor sinkExecutor =
+			new ThreadPoolExecutor(2, 4, 100,
+					TimeUnit.MILLISECONDS, sinkRunners);
+	
+	public CameraServer(VideoView localView)
 	{
 		this.localView = localView;
-		this.remoteView = remoteView;
-		this.remoteAddr = remoteAddr;
 		localView.getHolder().addCallback(this);
-		remoteView.getHolder().addCallback(this);
+	}
+	
+	public void setImageSource(ImageSource imageSource) {
+		
+	}
+	
+	public synchronized void addImageSink(ImageSink imageSink) {
+		imageSinks.add(imageSink);
+	}
+	
+	public synchronized void removeImageSink(ImageSink imageSink) {
+		imageSinks.remove(imageSink);
 	}
 
 	public synchronized void start() {
@@ -70,7 +99,14 @@ class CameraPreview implements SurfaceHolder.Callback {
 		restartCamera();
 	}
 	
-	protected Camera openCamera() {
+	public synchronized void focus() {
+		if (!mCameraOpened) {
+			return;
+		}
+		camera.autoFocus(null);
+	}
+	
+	protected Camera openCamera(CameraInfo ci) {
 		int numberOfCameras = Camera.getNumberOfCameras();
 		if (numberOfCameras == 0) {
 			return null;
@@ -78,7 +114,6 @@ class CameraPreview implements SurfaceHolder.Callback {
 		
 		int goodCameraIndex = -1;
 		for (int i = 0; i < numberOfCameras; i++) {
-			CameraInfo ci = new CameraInfo();
 			Camera.getCameraInfo(i, ci);
 			if ((ci.facing == CameraInfo.CAMERA_FACING_FRONT) == mUseFrontCamera) {
 				goodCameraIndex = i;
@@ -90,52 +125,15 @@ class CameraPreview implements SurfaceHolder.Callback {
 		}
 		return Camera.open(goodCameraIndex);
 	}
-
-	ImageSink sink = null;
-	TcpUnicastClient src = null;
-	
-	protected void startNetwork() {
-		int port = 45678;
-		try {
-			sink = new TcpUnicastServer(port);
-		}
-		catch (Exception e) {
-			Log.e("xcam", "failed to create sink");
-		}
-		
-		try {
-			src = new TcpUnicastClient();
-			src.connect(remoteAddr, port);
-		}
-		catch (Exception e) {
-			Log.e("xcam", "failed to create source", e);
-		}
-		
-		src.setOnFrameBitmapCallback(new ImageSource.OnFrameBitmapCallback() {
-			@Override
-			public void onFrame(Bitmap bitmap) {
-				if (bitmap == null) {
-					return;
-				}
-				
-				synchronized(CameraPreview.class) {
-					SurfaceHolder surfaceHolder = remoteView.getHolder();
-					Canvas canvas = surfaceHolder.lockCanvas();		
-					canvas.drawBitmap(bitmap, 0, 0, null);
-					surfaceHolder.unlockCanvasAndPost(canvas);
-				}
-			}
-		});		
-	}
 	
 	protected void cameraBitmap(Bitmap bitmap) {
-		if (sink != null) {
+		for (ImageSink sink : imageSinks) {
 			try {
 				sink.send(bitmap);
 			} catch (Exception e) {
 				e.printStackTrace();
-			}
-		}		
+			}	
+		}
 	}
 
 	public synchronized void startCamera() {
@@ -143,28 +141,26 @@ class CameraPreview implements SurfaceHolder.Callback {
 			return;
 		}
 		
-		if ((camera = openCamera()) == null) {
+		CameraInfo cameraInfo = new CameraInfo();
+		if ((camera = openCamera(cameraInfo)) == null) {
 			return;
 		}
-		
-		new Thread() {
-			@Override
-			public void run() {
-				startNetwork();
-			}
-		}.start();
 		
 		Camera.Parameters params = camera.getParameters();
 		params.setPreviewSize(320, 240);
 		camera.setParameters(params);
-
+		
+		final int cameraAngle = cameraInfo.orientation;
+		
 		CameraYUVPreviewCallback cb = new CameraYUVPreviewCallback(camera);
 		cb.setOnFrameCallback(new ImageSource.OnFrameRawCallback() {
 			@Override
 			public void onFrame(int[] rgbBuffer, int width, int height) {
-				ImageProcessing.preProcess(rgbBuffer, width, height);
+				ImageProcessing.preProcess(rgbBuffer, width, height);				
 				Bitmap bmp = Bitmap.createBitmap(rgbBuffer, width, height,
 						Bitmap.Config.RGB_565);
+								
+				bmp = ImageProcessing.process(bmp, cameraAngle);
 				cameraBitmap(bmp);
 				
 				SurfaceHolder surfaceHolder = localView.getHolder();
@@ -184,6 +180,7 @@ class CameraPreview implements SurfaceHolder.Callback {
 			return;
 		}
 		camera.stopPreview();
+		camera.setPreviewCallback(null);
 		camera.release();
 		camera = null;
 		mCameraOpened = false;
