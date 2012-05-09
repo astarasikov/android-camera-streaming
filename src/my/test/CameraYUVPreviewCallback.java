@@ -2,6 +2,7 @@ package my.test;
 
 import my.test.image.ImageUtils;
 import android.hardware.Camera;
+import android.util.Log;
 
 public class CameraYUVPreviewCallback implements Camera.PreviewCallback,
 	ImageSource
@@ -35,7 +36,7 @@ public class CameraYUVPreviewCallback implements Camera.PreviewCallback,
 	@Override
 	public synchronized void onPreviewFrame(byte[] data, Camera camera) {
 		realloc(camera);
-		
+
 		Camera.Size params = camera.getParameters().getPreviewSize();
 		int width = params.width;
 		int height = params.height;

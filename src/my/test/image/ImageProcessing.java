@@ -12,6 +12,7 @@ import android.graphics.PointF;
 import android.graphics.Typeface;
 import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
+import android.util.Log;
 
 public class ImageProcessing {
 	public static class Kernel2D {
@@ -91,14 +92,8 @@ public class ImageProcessing {
 	 */
 	
 	public static void Convolve2D(Kernel2D kernel,
-			int rgb[], int width, int height)
+			int old[], int out[], int width, int height)
 	{
-		/*
-		 * copy the old image because the result at each pixel
-		 * depends on the original value in the neighbouring pixels
-		 */
-		int old[] = Arrays.copyOf(rgb, rgb.length);
-		
 		int dx = kernel.width >> 1;
 		int dy = kernel.height >> 1;
 				
@@ -159,10 +154,10 @@ public class ImageProcessing {
 					green = mask_g & (green / kernel.magnitude);
 					blue = mask_b & (blue / kernel.magnitude);
 				}
-				
+								
 				int result = (0xff << 24) | (red << shift_r)
 						| (green << shift_g) | blue;
-				rgb[width * i + j] = result;
+				out[width * i + j] = result;
 			}
 		}
 	}
@@ -172,34 +167,41 @@ public class ImageProcessing {
 	{
 	}
 	
-	public static void preProcess(int rgb[], int width, int height) {
+	public static void preProcess(int rgb[], int out[], int width, int height) {
 		//for (int i = 0; i < rgb.length; i++) {
 		//	rgb[i] = 0xff000000 | ~(rgb[i] & 0xffffff);
 		//}
 		//Convolve2D(Kernel2D.Identity(), rgb, width, height);
-		//Convolve2D(Kernel2D.Test(), rgb, width, height);
+		Convolve2D(Kernel2D.Sobel(), rgb, out, width, height);
 	}
 	public static Bitmap process(Bitmap bitmap, int angle) {
 		int width = bitmap.getWidth();
 		int height = bitmap.getHeight();
 
-		//bitmap = bitmap.copy(Config.RGB_565, true);
-		Matrix m = new Matrix();
-		m.postRotate(angle);
-		bitmap = Bitmap.createBitmap(bitmap, 0, 0,
-				width, height, m, false);
+		if (angle != 0) {
+			Matrix m = new Matrix();
+			m.postRotate(angle);
+			bitmap = Bitmap.createBitmap(bitmap, 0, 0,
+					width, height, m, false);			
+		}
+		else {
+			bitmap = bitmap.copy(Config.RGB_565, true);
+		}
 		
 		width = bitmap.getWidth();
 		height = bitmap.getHeight();
 		
 		Canvas c = new Canvas(bitmap);
-		c.rotate(angle);
-		
+				
 		Paint paint = new Paint();
 		paint.setColor(Color.RED);
 		paint.setTextSize(20);
 		paint.setTypeface(Typeface.DEFAULT_BOLD);
 
+		/* some debugging code to test scaling */
+		c.drawLine(0, 0, width, height, paint);
+		c.drawLine(height, 0, width, 0, paint);		
+		/* end of scaling code */
 		
 		FaceDetector fd = new FaceDetector(width, height, 1);
 		Face faces[] = new Face[1];
@@ -209,10 +211,14 @@ public class ImageProcessing {
 			PointF pf = new PointF();
 			f.getMidPoint(pf);
 
-			c.drawRect(pf.x, pf.y, 10, 10, paint);
+			c.drawText("Found a face", 0, 0, paint);
+			int dEyes = (int)f.eyesDistance();
+						
+			c.drawRect(pf.x - (dEyes / 2), pf.y, dEyes, 10, paint);
 		}
-		
-		c.drawText("Fuck yeah", 0, 0, paint);
+		else {
+			c.drawText("No faces found", 0, 0, paint);
+		}
 		
 		return bitmap;
 	}

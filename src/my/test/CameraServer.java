@@ -21,6 +21,7 @@ package my.test;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.media.MediaRecorder;
@@ -147,26 +148,42 @@ class CameraServer implements SurfaceHolder.Callback {
 		}
 		
 		Camera.Parameters params = camera.getParameters();
-		params.setPreviewSize(320, 240);
+		params.setPreviewSize(640, 480);
+		//params.setPreviewSize(320, 240);
 		camera.setParameters(params);
 		
 		final int cameraAngle = cameraInfo.orientation;
 		
 		CameraYUVPreviewCallback cb = new CameraYUVPreviewCallback(camera);
 		cb.setOnFrameCallback(new ImageSource.OnFrameRawCallback() {
-			@Override
-			public void onFrame(int[] rgbBuffer, int width, int height) {
-				ImageProcessing.preProcess(rgbBuffer, width, height);				
+			int tmpBuffer[] = new int[640 * 480];
+			
+			//@Override
+			public void TonFrame(int[] rgbBuffer, int width, int height) {
+				ImageProcessing.preProcess(rgbBuffer, tmpBuffer, width, height);				
 				Bitmap bmp = Bitmap.createBitmap(rgbBuffer, width, height,
 						Bitmap.Config.RGB_565);
 								
-				bmp = ImageProcessing.process(bmp, cameraAngle);
+				//bmp = ImageProcessing.process(bmp, cameraAngle);
 				cameraBitmap(bmp);
 				
 				SurfaceHolder surfaceHolder = localView.getHolder();
 				Canvas canvas = surfaceHolder.lockCanvas();		
 				canvas.drawBitmap(bmp, 0, 0, null);
 				surfaceHolder.unlockCanvasAndPost(canvas);
+			}
+			
+			@Override
+			public void onFrame(int[] rgb, int width, int height) {
+				final int crgb[] = Arrays.copyOf(rgb, rgb.length);
+				final int xw = width;
+				final int xh = height;
+				sinkExecutor.submit(new Runnable() {
+					@Override
+					public void run() {
+						TonFrame(crgb, xw, xh);
+					}
+				});
 			}
 		});
 		camera.setPreviewCallback(cb);
