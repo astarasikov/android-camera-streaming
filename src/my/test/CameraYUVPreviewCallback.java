@@ -12,7 +12,7 @@ public class CameraYUVPreviewCallback implements Camera.PreviewCallback,
 	
 	synchronized void realloc(Camera cam) {
 		Camera.Size size = cam.getParameters().getPreviewSize();
-		int bufSize = size.width * size.height * 3;
+		int bufSize = size.width * size.height;
 		int yuvSize = (bufSize * 3) / 2;
 		
 		boolean rgbIsGood = rgbBuffer != null && rgbBuffer.length == bufSize;
