@@ -1,5 +1,13 @@
 package my.test;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.Map;
+
+import my.test.net.http.HttpServer;
+import my.test.net.http.HttpServer.Handler;
+import my.test.net.http.HttpServer.ResponseCode;
 import my.test.net.tcp.TcpUnicastClient;
 import my.test.net.tcp.TcpUnicastServer;
 import my.test.ui.StartServerActivity;
@@ -85,6 +93,46 @@ public class CameraProcessingTestActivity extends Activity {
         String remoteAddr = prefs.getString(keyRemoteAddr, "127.0.0.1");
         
         preview = new CameraServer(local);
+        
+        try {
+        	HttpServer srv = new HttpServer(8080);
+        	srv.addHandler("test", new Handler() {
+				
+				@Override
+				public boolean handle(Map<String, String> params,
+						OutputStream outputStream) throws IOException {
+					PrintWriter pw = new PrintWriter(outputStream);
+					pw.write("Content-Type:text/http\n");
+					pw.write("\n");
+					
+					pw.write("<head>");
+					pw.write("<title>Test Http response</title>");
+					pw.write("</head>");
+					
+					pw.write("<body><table>\n");
+					for (Map.Entry<String, String> param : params.entrySet()) {
+						pw.write("<tr>");
+						
+						pw.write("<th>");
+						pw.write(param.getKey());
+						pw.write("</th>");
+						
+						pw.write("<th>");
+						pw.write(param.getValue());
+						pw.write("</th>");
+						
+						pw.write("</tr>");
+					}
+					pw.write("</table></body>");
+					pw.flush();
+					
+					return true;
+				}
+			});
+        }
+        catch (Exception e) {
+        	Log.e("camera processing", "failed to start HTTP server");
+        }
         
         ((Button)findViewById(R.id.pref_button)).setOnClickListener(
 	        new OnClickListener() {

@@ -19,33 +19,20 @@
 package my.test;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
-import android.media.MediaRecorder;
-import android.os.StrictMode.ThreadPolicy;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.widget.VideoView;
 
-
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.HttpsURLConnection;
-
 import my.test.image.ImageProcessing;
-import my.test.net.tcp.TcpUnicastClient;
-import my.test.net.tcp.TcpUnicastServer;
 
 class CameraServer implements SurfaceHolder.Callback {
 	// Stores hardware camera state
@@ -74,7 +61,6 @@ class CameraServer implements SurfaceHolder.Callback {
 	}
 	
 	public void setImageSource(ImageSource imageSource) {
-		
 	}
 	
 	public synchronized void addImageSink(ImageSink imageSink) {
@@ -148,8 +134,8 @@ class CameraServer implements SurfaceHolder.Callback {
 		}
 		
 		Camera.Parameters params = camera.getParameters();
-		params.setPreviewSize(640, 480);
-		//params.setPreviewSize(320, 240);
+		//params.setPreviewSize(640, 480);
+		params.setPreviewSize(320, 240);
 		camera.setParameters(params);
 		
 		final int cameraAngle = cameraInfo.orientation;
@@ -158,32 +144,19 @@ class CameraServer implements SurfaceHolder.Callback {
 		cb.setOnFrameCallback(new ImageSource.OnFrameRawCallback() {
 			int tmpBuffer[] = new int[640 * 480];
 			
-			//@Override
-			public void TonFrame(int[] rgbBuffer, int width, int height) {
+			@Override
+			public void onFrame(int[] rgbBuffer, int width, int height) {
 				ImageProcessing.preProcess(rgbBuffer, tmpBuffer, width, height);				
 				Bitmap bmp = Bitmap.createBitmap(rgbBuffer, width, height,
 						Bitmap.Config.RGB_565);
 								
-				//bmp = ImageProcessing.process(bmp, cameraAngle);
+				bmp = ImageProcessing.process(bmp, cameraAngle);
 				cameraBitmap(bmp);
 				
 				SurfaceHolder surfaceHolder = localView.getHolder();
 				Canvas canvas = surfaceHolder.lockCanvas();		
 				canvas.drawBitmap(bmp, 0, 0, null);
 				surfaceHolder.unlockCanvasAndPost(canvas);
-			}
-			
-			@Override
-			public void onFrame(int[] rgb, int width, int height) {
-				final int crgb[] = Arrays.copyOf(rgb, rgb.length);
-				final int xw = width;
-				final int xh = height;
-				sinkExecutor.submit(new Runnable() {
-					@Override
-					public void run() {
-						TonFrame(crgb, xw, xh);
-					}
-				});
 			}
 		});
 		camera.setPreviewCallback(cb);
