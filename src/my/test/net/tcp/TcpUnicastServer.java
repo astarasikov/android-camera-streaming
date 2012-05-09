@@ -17,29 +17,33 @@ import my.test.ImageSink;
 public class TcpUnicastServer implements ImageSink {
 	final static String LOG_TAG = TcpUnicastServer.class.getSimpleName();
 
-	final ThreadPoolExecutor executor;
-	final List<Socket> clients = Collections
+	final Thread mAcceptorThread;
+	final ServerSocket mServerSocket;
+	
+	final ThreadPoolExecutor mExecutor;
+	final List<Socket> mClients = Collections
 			.synchronizedList(new LinkedList<Socket>());
 	
 
 	public TcpUnicastServer(int port, ThreadPoolExecutor executor)
 			throws Exception
 	{
-		this.executor = executor;
-		final ServerSocket ss = new ServerSocket(port);
-		ss.setReuseAddress(true);
-		new Thread() {
+		this.mExecutor = executor;
+		mServerSocket = new ServerSocket(port);
+		mServerSocket.setReuseAddress(true);
+		mAcceptorThread = new Thread() {
 			@Override
 			public void run() {
 				while (!isInterrupted()) {
 					try {
-						clients.add(ss.accept());
+						mClients.add(mServerSocket.accept());
 					} catch (IOException e) {
 						Log.e(LOG_TAG, "failed to accept socket", e);
 					}
 				}
 			}
-		}.start();
+		};
+		mAcceptorThread.start();
 	}
 	
 	class SendBitmapTask implements Runnable 
@@ -61,7 +65,7 @@ public class TcpUnicastServer implements ImageSink {
 				}
 			}
 			catch (IOException e) {
-				clients.remove(socket);
+				mClients.remove(socket);
 				try {
 					socket.close();
 				} catch (IOException closeException) {
@@ -75,11 +79,34 @@ public class TcpUnicastServer implements ImageSink {
 
 	@Override
 	public void send(Bitmap bitmap) {
-		synchronized (clients) {
-			for (Socket client : clients) {
+		synchronized (mClients) {
+			for (Socket client : mClients) {
 				Runnable tasklet = new SendBitmapTask(client, bitmap);
-				executor.submit(tasklet);
+				mExecutor.submit(tasklet);
 			}
+		}
+	}
+	
+	@Override
+	public void teardown() {
+		if (mAcceptorThread == null) {
+			return;
+		}
+		if (!mAcceptorThread.isAlive()) {
+			return;
+		}
+		
+		mAcceptorThread.interrupt();
+		try {
+			mAcceptorThread.join();
+		} catch (InterruptedException e) {
+			Log.d(LOG_TAG, "failed to wait for thread completion", e);
+		}
+		
+		try {
+			mServerSocket.close();
+		} catch (IOException e) {
+			Log.d(LOG_TAG, "failed to close the socket", e);
 		}
 	}
 }
