@@ -60,9 +60,11 @@ class CameraServer implements SurfaceHolder.Callback {
 		localView.getHolder().addCallback(this);
 	}
 	
-	public void setImageSource(ImageSource imageSource) {
+	//FIXME: decide on which class should initiate server connections
+	public ThreadPoolExecutor getExecutor() {
+		return sinkExecutor;
 	}
-	
+		
 	public synchronized void addImageSink(ImageSink imageSink) {
 		imageSinks.add(imageSink);
 	}

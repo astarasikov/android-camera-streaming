@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import my.test.net.http.HttpServer;
 import my.test.net.http.HttpServer.Handler;
@@ -39,14 +40,15 @@ public class CameraProcessingTestActivity extends Activity {
 				0);
 	}
 	
-	protected void startNetwork() {
-		/*
+	protected void startNetwork(final VideoView remoteView,
+			String remoteAddr, CameraServer cameraServer)
+	{
 		ImageSink sink = null;
 		TcpUnicastClient src = null;
 		
 		int port = 45678;
 		try {
-			sink = new TcpUnicastServer(port, sinkExecutor);
+			sink = new TcpUnicastServer(port, cameraServer.getExecutor());
 		}
 		catch (Exception e) {
 			Log.e("xcam", "failed to create sink");
@@ -74,7 +76,9 @@ public class CameraProcessingTestActivity extends Activity {
 					surfaceHolder.unlockCanvasAndPost(canvas);
 				}
 			}
-		});	*/	
+		});
+		
+		cameraServer.addImageSink(sink);
 	}
 	
 	
@@ -85,14 +89,21 @@ public class CameraProcessingTestActivity extends Activity {
         setContentView(R.layout.main);
         
         VideoView local = (VideoView)findViewById(R.id.view_local);
-        VideoView remote = (VideoView)findViewById(R.id.view_remote);
-        
         SharedPreferences prefs =
         		PreferenceManager.getDefaultSharedPreferences(this);
-        String keyRemoteAddr = getString(R.string.key_pref_remote_addr);
-        String remoteAddr = prefs.getString(keyRemoteAddr, "127.0.0.1");
+ 
+        final String keyRemoteAddr = getString(R.string.key_pref_remote_addr);
+        final String remoteAddr = prefs.getString(keyRemoteAddr, "127.0.0.1");
+        final VideoView remote = (VideoView)findViewById(R.id.view_remote);
         
         preview = new CameraServer(local);
+        
+        new Thread() {
+        	@Override
+        	public void run() {
+            	startNetwork(remote, remoteAddr, preview);        		
+        	};
+        }.start();
         
         try {
         	HttpServer srv = new HttpServer(8080);
