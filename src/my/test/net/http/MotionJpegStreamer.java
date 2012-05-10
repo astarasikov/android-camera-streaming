@@ -9,6 +9,7 @@ import java.util.Map;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.util.Log;
+import android.widget.FrameLayout;
 
 import my.test.ImageSink;
 
@@ -17,12 +18,13 @@ public class MotionJpegStreamer implements HttpServer.Handler,
 {
 	final static String LOG_TAG = MotionJpegStreamer.class.getSimpleName();
 	Bitmap lastFrame = null;
+	final long frameDate[] = new long[] { 0 };
 	
 	class MotionJpegThread extends Thread {
 		final OutputStream outputStream;
 		final PrintStream printStream;
 		final Object synchronizer;
-		
+				
 		public MotionJpegThread(OutputStream outputStream, Object synchronizer)
 				throws IOException
 		{
@@ -52,6 +54,11 @@ public class MotionJpegStreamer implements HttpServer.Handler,
 						continue;
 					}
 					
+					long dateDiff = System.currentTimeMillis() - frameDate[0];
+					if (dateDiff > 50) {
+						continue;
+					}
+										
 					headerJPG(printStream);
 					printStream.flush();
 					currentBitmap.compress(CompressFormat.JPEG,
@@ -129,6 +136,7 @@ public class MotionJpegStreamer implements HttpServer.Handler,
 	@Override
 	public synchronized void send(Bitmap bitmap) throws Exception {
 		lastFrame = bitmap;
+		frameDate[0] = System.currentTimeMillis();
 	}
 
 	@Override
