@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import my.test.net.http.HttpServer;
+import my.test.net.http.MotionJpegStreamer;
 import my.test.net.http.HttpServer.Handler;
 import my.test.net.http.HttpServer.ResponseCode;
 import my.test.net.tcp.TcpUnicastClient;
@@ -105,6 +106,9 @@ public class CameraProcessingTestActivity extends Activity {
         	};
         }.start();
         
+        MotionJpegStreamer mjpgStreamer = new MotionJpegStreamer();
+        preview.addImageSink(mjpgStreamer);
+        
         try {
         	HttpServer srv = new HttpServer(8080);
         	srv.addHandler("test", new Handler() {
@@ -140,6 +144,7 @@ public class CameraProcessingTestActivity extends Activity {
 					return true;
 				}
 			});
+        	srv.addHandler("video.jpg", mjpgStreamer);
         }
         catch (Exception e) {
         	Log.e("camera processing", "failed to start HTTP server");
