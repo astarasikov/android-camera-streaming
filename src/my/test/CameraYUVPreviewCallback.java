@@ -8,39 +8,30 @@ public class CameraYUVPreviewCallback implements Camera.PreviewCallback,
 	ImageSource
 {
 	OnFrameRawCallback onFrameCallback;
+	int width;
+	int height;
+	
 	int rgbBuffer[];
 	byte yuvBuffer[];
 	
-	synchronized void realloc(Camera cam) {
-		Camera.Size size = cam.getParameters().getPreviewSize();
-		int bufSize = size.width * size.height;
+	synchronized void allocateBuffers() {
+		int bufSize = width * height;
 		int yuvSize = (bufSize * 3) / 2;
-		
-		boolean rgbIsGood = rgbBuffer != null && rgbBuffer.length == bufSize;
-		boolean yuvIsGood = yuvBuffer != null && yuvBuffer.length == yuvSize;
-		
-		if (!rgbIsGood) {
-			rgbBuffer = new int[bufSize];		
-		}
-		
-		if (!yuvIsGood) {
-			yuvBuffer = new byte[yuvSize];
-		}
+		rgbBuffer = new int[bufSize];		
+		yuvBuffer = new byte[yuvSize];
 	}
 	
 	public CameraYUVPreviewCallback(Camera camera) {
-		realloc(camera);
+		Camera.Size params = camera.getParameters().getPreviewSize();
+		width = params.width;
+		height = params.height;
+		allocateBuffers();
 		camera.addCallbackBuffer(yuvBuffer);
 	}
 	
 	@Override
-	public synchronized void onPreviewFrame(byte[] data, Camera camera) {
-		realloc(camera);
-
-		Camera.Size params = camera.getParameters().getPreviewSize();
-		int width = params.width;
-		int height = params.height;
-		
+	public synchronized void onPreviewFrame(byte[] data, Camera camera) 
+	{
 		if (onFrameCallback != null) {
 			ImageUtils.decodeYUV420SP(rgbBuffer, data, width, height);
 			onFrameCallback.onFrame(rgbBuffer, width, height);
