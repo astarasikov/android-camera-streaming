@@ -35,16 +35,26 @@ import java.util.concurrent.TimeUnit;
 import my.test.image.ImageProcessing;
 
 class CameraServer implements SurfaceHolder.Callback {
-	// Stores hardware camera state
-
-	protected boolean mCameraOpened = false;
-	// Stores the request from external logic (i.e, UI)
-	protected boolean mNeedsPreview = false;
+	public static class Parameters {
+		public final int width;
+		public final int height;
+		public final boolean frontCamera;
+		public final VideoView videoView;
+		
+		public Parameters(int width, int height, boolean front, VideoView view)
+		{
+			this.width = width;
+			this.height = height;
+			this.frontCamera = front;
+			this.videoView = view;
+		}
+	}
 	
-	//whether front or rear camera is used
-	protected boolean mUseFrontCamera = false;
+	protected Parameters mParameters;
+	
+	protected boolean mNeedsPreview = false;
+	protected boolean mCameraOpened = false;
 	Camera camera = null;
-	VideoView localView;
 	
 	List<ImageSink> imageSinks = new LinkedList<ImageSink>();
 	
@@ -54,17 +64,33 @@ class CameraServer implements SurfaceHolder.Callback {
 			new ThreadPoolExecutor(2, 4, 100,
 					TimeUnit.MILLISECONDS, sinkRunners);
 	
-	public CameraServer(VideoView localView)
+	public CameraServer(Parameters parameters)
 	{
-		this.localView = localView;
-		localView.getHolder().addCallback(this);
+		setParameters(parameters);
 	}
 	
 	//FIXME: decide on which class should initiate server connections
 	public ThreadPoolExecutor getExecutor() {
 		return sinkExecutor;
 	}
+	
+	public synchronized void setParameters(Parameters parameters) {
+		if (mParameters != null && mParameters.videoView != null) {
+			mParameters.videoView.getHolder().removeCallback(this);
+		}
 		
+		this.mParameters = parameters;
+		
+		if (mParameters.videoView != null) {
+			mParameters.videoView.getHolder().addCallback(this);
+		}
+		restart();
+	}
+	
+	public synchronized Parameters getParameters() {
+		return mParameters;
+	}
+	
 	public synchronized void addImageSink(ImageSink imageSink) {
 		imageSinks.add(imageSink);
 	}
@@ -72,22 +98,24 @@ class CameraServer implements SurfaceHolder.Callback {
 	public synchronized void removeImageSink(ImageSink imageSink) {
 		imageSinks.remove(imageSink);
 	}
+	
+	protected synchronized void restart() {
+		stopCamera();
+		if (mNeedsPreview) {
+			startCamera();
+		}
+	}
 
 	public synchronized void start() {
 		mNeedsPreview = true;
-		restartCamera();
+		restart();
 	}
 
 	public synchronized void stop() {
 		mNeedsPreview = false;
-		restartCamera();
+		restart();
 	}
-	
-	public synchronized void setUseFrontCamera(boolean enabled) {
-		mUseFrontCamera = enabled;
-		restartCamera();
-	}
-	
+		
 	public synchronized void focus() {
 		if (!mCameraOpened) {
 			return;
@@ -104,7 +132,8 @@ class CameraServer implements SurfaceHolder.Callback {
 		int goodCameraIndex = -1;
 		for (int i = 0; i < numberOfCameras; i++) {
 			Camera.getCameraInfo(i, ci);
-			if ((ci.facing == CameraInfo.CAMERA_FACING_FRONT) == mUseFrontCamera) {
+			boolean isFrontCam = ci.facing == CameraInfo.CAMERA_FACING_FRONT;
+			if (isFrontCam == mParameters.frontCamera) {
 				goodCameraIndex = i;
 				break;
 			}
@@ -115,7 +144,7 @@ class CameraServer implements SurfaceHolder.Callback {
 		return Camera.open(goodCameraIndex);
 	}
 	
-	protected void cameraBitmap(Bitmap bitmap) {
+	protected void sendCameraImage(Bitmap bitmap) {
 		for (ImageSink sink : imageSinks) {
 			try {
 				sink.send(bitmap);
@@ -124,8 +153,15 @@ class CameraServer implements SurfaceHolder.Callback {
 			}	
 		}
 	}
+	
+	protected void drawLocalPreview(Bitmap bitmap) {
+		SurfaceHolder surfaceHolder = mParameters.videoView.getHolder();
+		Canvas canvas = surfaceHolder.lockCanvas();		
+		canvas.drawBitmap(bitmap, 0, 0, null);
+		surfaceHolder.unlockCanvasAndPost(canvas);
+	}
 
-	public synchronized void startCamera() {
+	protected synchronized void startCamera() {
 		if (mCameraOpened) {
 			return;
 		}
@@ -134,17 +170,17 @@ class CameraServer implements SurfaceHolder.Callback {
 		if ((camera = openCamera(cameraInfo)) == null) {
 			return;
 		}
+
+		final Parameters params = this.mParameters;
 		
-		Camera.Parameters params = camera.getParameters();
-		//params.setPreviewSize(640, 480);
-		params.setPreviewSize(320, 240);
-		camera.setParameters(params);
-		
+		Camera.Parameters cameraParameters = camera.getParameters();
+		cameraParameters.setPreviewSize(params.width, params.height);
+		camera.setParameters(cameraParameters);
 		final int cameraAngle = cameraInfo.orientation;
 		
 		CameraYUVPreviewCallback cb = new CameraYUVPreviewCallback(camera);
 		cb.setOnFrameCallback(new ImageSource.OnFrameRawCallback() {
-			int tmpBuffer[] = new int[640 * 480];
+			int tmpBuffer[] = new int[params.width * params.height];
 			
 			@Override
 			public void onFrame(int[] rgbBuffer, int width, int height) {
@@ -153,12 +189,9 @@ class CameraServer implements SurfaceHolder.Callback {
 						Bitmap.Config.RGB_565);
 								
 				bmp = ImageProcessing.process(bmp, cameraAngle);
-				cameraBitmap(bmp);
 				
-				SurfaceHolder surfaceHolder = localView.getHolder();
-				Canvas canvas = surfaceHolder.lockCanvas();		
-				canvas.drawBitmap(bmp, 0, 0, null);
-				surfaceHolder.unlockCanvasAndPost(canvas);
+				drawLocalPreview(bmp);
+				sendCameraImage(bmp);
 			}
 		});
 		camera.setPreviewCallback(cb);
@@ -167,7 +200,7 @@ class CameraServer implements SurfaceHolder.Callback {
 		mCameraOpened = true;
 	}
 
-	public synchronized void stopCamera() {
+	protected synchronized void stopCamera() {
 		if (!mCameraOpened) {
 			return;
 		}
@@ -178,19 +211,12 @@ class CameraServer implements SurfaceHolder.Callback {
 		mCameraOpened = false;
 	}
 
-	public synchronized void restartCamera() {
-		stopCamera();
-		if (mNeedsPreview) {
-			startCamera();
-		}
-	}
-
 	public void surfaceCreated(SurfaceHolder sh) {
-		restartCamera();
+		restart();
 	}
 
 	public void surfaceChanged(SurfaceHolder sh, int i, int i1, int i2) {
-		restartCamera();
+		restart();
 	}
 
 	public void surfaceDestroyed(SurfaceHolder sh) {

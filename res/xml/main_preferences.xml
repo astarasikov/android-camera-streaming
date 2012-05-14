@@ -19,7 +19,7 @@
 		<EditTextPreference
 		    android:key="@string/key_pref_local_port"
 		    android:title="@string/local_port"
-		    android:defaultValue="45678"
+		    android:defaultValue="8082"
 		    android:summary="@string/help_local_port"/>
 		<CheckBoxPreference
 		    android:key="@string/key_pref_client"
@@ -35,7 +35,7 @@
 		<EditTextPreference
 		    android:key="@string/key_pref_remote_port"
 		    android:title="@string/remote_port"
-		    android:defaultValue="45678"
+		    android:defaultValue="8082"
 		    android:summary="@string/help_remote_port"/>
 	</PreferenceCategory>
 </PreferenceScreen>

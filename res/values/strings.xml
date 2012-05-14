@@ -32,4 +32,6 @@
     <string name="help_start_tcp_client">Connect to the remote device streaming video to view it locally</string>
 	<string name="remote_port">Remote TCP port</string>
 	<string name="help_remote_port">Select the TCP port on which the video is streamed on the remote device</string>
+	<string name="start_server">Start Server</string>
+	<string name="stop_server">Stop Server</string>
 </resources>
