@@ -34,19 +34,17 @@ import java.util.concurrent.TimeUnit;
 
 import my.test.image.ImageProcessing;
 
-class CameraServer implements SurfaceHolder.Callback {
+class ImageGraph implements SurfaceHolder.Callback {
 	public static class Parameters {
 		public final int width;
 		public final int height;
 		public final boolean frontCamera;
-		public final VideoView videoView;
 		
-		public Parameters(int width, int height, boolean front, VideoView view)
+		public Parameters(int width, int height, boolean front)
 		{
 			this.width = width;
 			this.height = height;
 			this.frontCamera = front;
-			this.videoView = view;
 		}
 	}
 	
@@ -64,7 +62,7 @@ class CameraServer implements SurfaceHolder.Callback {
 			new ThreadPoolExecutor(2, 4, 100,
 					TimeUnit.MILLISECONDS, sinkRunners);
 	
-	public CameraServer(Parameters parameters)
+	public ImageGraph(Parameters parameters)
 	{
 		setParameters(parameters);
 	}
@@ -75,15 +73,7 @@ class CameraServer implements SurfaceHolder.Callback {
 	}
 	
 	public synchronized void setParameters(Parameters parameters) {
-		if (mParameters != null && mParameters.videoView != null) {
-			mParameters.videoView.getHolder().removeCallback(this);
-		}
-		
 		this.mParameters = parameters;
-		
-		if (mParameters.videoView != null) {
-			mParameters.videoView.getHolder().addCallback(this);
-		}
 		restart();
 	}
 	
@@ -153,13 +143,6 @@ class CameraServer implements SurfaceHolder.Callback {
 			}	
 		}
 	}
-	
-	protected void drawLocalPreview(Bitmap bitmap) {
-		SurfaceHolder surfaceHolder = mParameters.videoView.getHolder();
-		Canvas canvas = surfaceHolder.lockCanvas();		
-		canvas.drawBitmap(bitmap, 0, 0, null);
-		surfaceHolder.unlockCanvasAndPost(canvas);
-	}
 
 	protected synchronized void startCamera() {
 		if (mCameraOpened) {
@@ -170,6 +153,7 @@ class CameraServer implements SurfaceHolder.Callback {
 		if ((camera = openCamera(cameraInfo)) == null) {
 			return;
 		}
+		mCameraOpened = true;
 
 		final Parameters params = this.mParameters;
 		
@@ -188,16 +172,12 @@ class CameraServer implements SurfaceHolder.Callback {
 				Bitmap bmp = Bitmap.createBitmap(rgbBuffer, width, height,
 						Bitmap.Config.RGB_565);
 								
-				bmp = ImageProcessing.process(bmp, cameraAngle);
-				
-				drawLocalPreview(bmp);
+				bmp = ImageProcessing.process(bmp, cameraAngle);				
 				sendCameraImage(bmp);
 			}
 		});
 		camera.setPreviewCallback(cb);
 		camera.startPreview();
-		
-		mCameraOpened = true;
 	}
 
 	protected synchronized void stopCamera() {

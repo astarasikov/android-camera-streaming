@@ -17,7 +17,6 @@
     <string name="preferences">Preferences</string>
     <string name="focus">Focus Camera</string>
     
-    
     <string name="device_preferences">Device Preferences</string>
     <string name="softyuv">Software YUV2RGB</string>
     
@@ -34,4 +33,7 @@
 	<string name="help_remote_port">Select the TCP port on which the video is streamed on the remote device</string>
 	<string name="start_server">Start Server</string>
 	<string name="stop_server">Stop Server</string>
+	
+	<string name="http_preferences">HTTP Preferences</string>
+	<string name="start_http_server">HTTP Server</string>
 </resources>

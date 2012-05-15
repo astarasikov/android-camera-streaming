@@ -25,48 +25,143 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ToggleButton;
 
 public class CameraProcessingTestActivity extends Activity {
-    
-	CameraServer preview;
+	static class VideoViewSink implements ImageSink {
+		VideoView videoView;
+		
+		public VideoViewSink(VideoView videoView) {
+			this.videoView = videoView;
+		}
+		
+		@Override
+		public void send(Bitmap bitmap) throws Exception {
+			SurfaceHolder surfaceHolder = videoView.getHolder();
+			Canvas canvas = surfaceHolder.lockCanvas();		
+			canvas.drawBitmap(bitmap, 0, 0, null);
+			surfaceHolder.unlockCanvasAndPost(canvas);
+		}
+
+		@Override
+		public void teardown() {			
+		}
+	}
+	
+	static public class DrawBitmapCallback
+		implements ImageSource.OnFrameBitmapCallback
+	{
+		VideoView videoView;
+		
+		public DrawBitmapCallback(VideoView videoView) {
+			this.videoView = videoView;
+		}
+	
+		@Override
+		public void onFrame(Bitmap bitmap) {
+			if (bitmap == null) {
+				return;
+			}
+			
+			synchronized(ImageGraph.class) {
+				SurfaceHolder surfaceHolder = videoView.getHolder();
+				Canvas canvas = surfaceHolder.lockCanvas();		
+				canvas.drawBitmap(bitmap, 0, 0, null);
+				surfaceHolder.unlockCanvasAndPost(canvas);
+			}
+		}
+		
+	}
+	
+	final static String LOG_TAG =
+			CameraProcessingTestActivity.class.getSimpleName();
+	
+	CameraProcessingTestActivity this_activity = this;
+	ImageGraph mImageGraph;
+	
+	SharedPreferences mSharedPreferences;
+	
+	protected String stringPreference(int keyId, String defaultValue) {
+		String key = getString(keyId);
+		return mSharedPreferences.getString(key, defaultValue);
+	}
+	
+	protected int intPreference(int keyId, int defaultValue) {
+		String key = getString(keyId);
+		return mSharedPreferences.getInt(key, defaultValue);
+	}
+	
+	protected boolean booleanPreference(int keyId, boolean defaultValue) {
+		String key = getString(keyId);
+		return mSharedPreferences.getBoolean(key, defaultValue);
+	}
+	
+	protected void startNetworkServer() throws Exception {
+        boolean startServer =
+        		booleanPreference(R.string.key_pref_server, true);
+        if (!startServer) {
+        	return;
+        }
+        int localPort =
+        		intPreference(R.string.key_pref_local_port, 8082);
+		
+        
+		ImageSink tcpServer = null;
+		tcpServer = new TcpUnicastServer(localPort,
+				mImageGraph.getExecutor());
+		mImageGraph.addImageSink(tcpServer);
+	}
+	
+	protected void startNetworkClient(VideoView videoView) throws Exception {
+        boolean startClient =
+        		booleanPreference(R.string.key_pref_client, true);
+        if (!startClient) {
+        	return;
+        }
+		TcpUnicastClient tcpClient = null;
+        String remoteAddr =
+        		stringPreference(R.string.key_pref_remote_addr,
+        				"127.0.0.1");
+		int remotePort =
+        		intPreference(R.string.key_pref_remote_port, 8082);
+		
+		tcpClient = new TcpUnicastClient();
+		tcpClient.connect(remoteAddr, remotePort);
+							
+		DrawBitmapCallback callback =
+				new DrawBitmapCallback(videoView);
+		tcpClient.setOnFrameBitmapCallback(callback);
+	}
 	
 	protected void startNetwork(final VideoView remoteView,
-			String remoteAddr, CameraServer cameraServer)
+			final ImageGraph cameraServer)
 	{
-		ImageSink sink = null;
-		TcpUnicastClient src = null;
-		
-		int port = 45678;
-		try {
-			sink = new TcpUnicastServer(port, cameraServer.getExecutor());
-		}
-		catch (Exception e) {
-			Log.e("xcam", "failed to create sink");
-		}
-		
-		try {
-			src = new TcpUnicastClient();
-			src.connect(remoteAddr, port);
-		}
-		catch (Exception e) {
-			Log.e("xcam", "failed to create source", e);
-		}
-		
-		src.setOnFrameBitmapCallback(new ImageSource.OnFrameBitmapCallback() {
-			@Override
-			public void onFrame(Bitmap bitmap) {
-				if (bitmap == null) {
-					return;
+		new Thread() {
+			public void run() {
+				try {
+					startNetworkServer();
+					startNetworkClient(remoteView);
 				}
-				
-				synchronized(CameraServer.class) {
-					SurfaceHolder surfaceHolder = remoteView.getHolder();
-					Canvas canvas = surfaceHolder.lockCanvas();		
-					canvas.drawBitmap(bitmap, 0, 0, null);
-					surfaceHolder.unlockCanvasAndPost(canvas);
+				catch (Exception e) {
+					Log.e(LOG_TAG, "Failed to start streaming", e);
 				}
 			}
-		});
+		}.start();
+	}
 		
-		cameraServer.addImageSink(sink);
+	protected void startHttp() {
+        try {
+            MotionJpegStreamer mjpgStreamer = new MotionJpegStreamer();
+            mImageGraph.addImageSink(mjpgStreamer);
+        	HttpServer srv = new HttpServer(8080);
+        	srv.addHandler("video.jpg", mjpgStreamer);
+        }
+        catch (Exception e) {
+        	Log.e(LOG_TAG, "failed to start HTTP server", e);
+        }
+	}
+	
+	protected void startLocalPreview() {
+        VideoView local = (VideoView)findViewById(R.id.view_local); 
+        VideoViewSink videoViewSink = new VideoViewSink(local);
+        mImageGraph.addImageSink(videoViewSink);
 	}
 	
 	@Override
@@ -78,52 +173,26 @@ public class CameraProcessingTestActivity extends Activity {
 		inflater.inflate(R.menu.camera_menu, menu);
 	}
 	
-	
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        VideoView local = (VideoView)findViewById(R.id.view_local);
-        SharedPreferences prefs =
+        mSharedPreferences = 
         		PreferenceManager.getDefaultSharedPreferences(this);
- 
-        final String keyRemoteAddr = getString(R.string.key_pref_remote_addr);
-        final String remoteAddr = prefs.getString(keyRemoteAddr, "127.0.0.1");
-        final VideoView remote = (VideoView)findViewById(R.id.view_remote);
+        VideoView remote = (VideoView)findViewById(R.id.view_remote);
+        ImageGraph.Parameters params =
+        		new ImageGraph.Parameters(320, 240, false);
         
-        CameraServer.Parameters params =
-        		new CameraServer.Parameters(320, 240, false, local);
+        mImageGraph = new ImageGraph(params);
         
-        preview = new CameraServer(params);
-        
-        new Thread() {
-        	@Override
-        	public void run() {
-            	startNetwork(remote, remoteAddr, preview);        		
-        	};
-        }.start();
-        
-        MotionJpegStreamer mjpgStreamer = new MotionJpegStreamer();
-        preview.addImageSink(mjpgStreamer);
-        
-        try {
-        	HttpServer srv = new HttpServer(8080);
-        	srv.addHandler("video.jpg", mjpgStreamer);
-        }
-        catch (Exception e) {
-        	Log.e("camera processing", "failed to start HTTP server");
-        }
+        startNetwork(remote, mImageGraph);
+        startHttp();
+        startLocalPreview();
                 
-        ((Button)findViewById(R.id.pref_button)).setOnClickListener(
-	        new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					openContextMenu(findViewById(R.id.main_view));
-				}
-			});
-        
+        ((Button)findViewById(R.id.pref_button)).
+        	setOnClickListener(preferencesListener);
         ((Button)findViewById(R.id.focus_button)).
         	setOnClickListener(focusListener);        
         ((ToggleButton)findViewById(R.id.switch_streaming)).
@@ -132,11 +201,19 @@ public class CameraProcessingTestActivity extends Activity {
         	setOnCheckedChangeListener(frontCameraListener);
     }
     
+    OnClickListener preferencesListener = new OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			startActivity(new Intent(this_activity, CameraPreferences.class));
+		}
+	};
+    
     OnClickListener focusListener = new OnClickListener() {
 		
 		@Override
 		public void onClick(View v) {
-			preview.focus();
+			mImageGraph.focus();
 		}
 	};
 	
@@ -148,23 +225,22 @@ public class CameraProcessingTestActivity extends Activity {
 				boolean isChecked)
 		{
 			if (isChecked) {
-				preview.start();
+				mImageGraph.start();
 			}
 			else {
-				preview.stop();
+				mImageGraph.stop();
 			}
 		}
 	};
     
     protected void setUseFrontCamera(boolean enabled) {
-		CameraServer.Parameters oldParams = preview.getParameters();
-		CameraServer.Parameters params =
-				new CameraServer.Parameters(
+		ImageGraph.Parameters oldParams = mImageGraph.getParameters();
+		ImageGraph.Parameters params =
+				new ImageGraph.Parameters(
 						oldParams.width,
 						oldParams.height,
-						enabled,
-						oldParams.videoView);
-		preview.setParameters(params);
+						enabled);
+		mImageGraph.setParameters(params);
     }
     
     OnCheckedChangeListener frontCameraListener = new OnCheckedChangeListener()
