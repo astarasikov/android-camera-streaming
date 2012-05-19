@@ -1,3 +1,6 @@
 local.properties
 bin/*
+libs/*
+obj/*
+gen/*
 \.*

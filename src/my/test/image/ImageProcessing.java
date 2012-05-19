@@ -82,7 +82,7 @@ public class ImageProcessing {
 	public static class SeparableKernel2D {
 		
 	}
-	
+
 	/**
 	 * Convolves the image with the filter kernel
 	 * @param kernel the convolution filter kernel as a 2d matrix

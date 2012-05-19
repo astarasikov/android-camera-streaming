@@ -1,6 +1,17 @@
 package my.test.image;
 
+import android.util.Log;
+
 public class ImageUtils {
+	static {
+		Log.i("NATIVE", "loading dsp-jni");
+		System.loadLibrary("dsp-jni");
+	}
+	
+	public static native void nYUV2RGB(
+			int rgb[], byte yuv[], int width, int height);
+	
+	final static boolean useNative = true;
 	
 	/*
 	 * This subroutine is based on the decodeYUV420SPQuarterSize
@@ -9,6 +20,11 @@ public class ImageUtils {
     public static void decodeYUV420SP(
     		int[] rgb, byte[] yuv420sp, int width, int height)
     {
+    	if (useNative) {
+    		nYUV2RGB(rgb, yuv420sp, width, height);
+    		return;
+    	}
+    		
         final int frameSize = width * height;
 
         for (int j = 0, ypd = 0; j < height; j++) {

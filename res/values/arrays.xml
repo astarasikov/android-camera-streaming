@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="filter_values">
+        <item>gaussian-blur</item>
+        <item>box-blur</item>
+        <item>emboss</item>
+        <item>sharpen</item>
+        <item>edge-detection</item>
+    </string-array>
+    <string-array name="filter_names">
+        <item>Gaussian Blur</item>
+        <item>Box Blur</item>
+        <item>Emboss</item>
+        <item>Sharpen</item>
+        <item>Edge detection</item>
+    </string-array>
+</resources>

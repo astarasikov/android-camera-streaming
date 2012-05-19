@@ -9,6 +9,46 @@
 			android:summary="@string/help_softyuv"
 		/>
 	</PreferenceCategory>
+	
+	<PreferenceCategory android:title="Image Preferences">
+		<CheckBoxPreference
+			android:key="dsp_filter"
+			android:title="Filter Image"
+			android:defaultValue="false"
+			android:summary="Process image and add visual effects"
+		/>
+		<ListPreference 
+		    android:title="List of effects"
+		    android:summary="Select one"
+		    android:dependency="dsp_filter"
+		    android:key="filter"
+		    android:defaultValue="1"
+		    android:entries="@array/filter_names"
+		    android:entryValues="@array/filter_values"
+		    />
+		<CheckBoxPreference
+			android:key="ar_effects"
+			android:title="AR Effects"
+			android:defaultValue="false"
+			android:summary="Add visuals to augment the reality"
+		/>
+		<CheckBoxPreference
+			android:key="ar_background"
+			android:dependency="ar_effects"
+			android:title="Replace background"
+			android:defaultValue="false"
+			android:summary="Replace the background behing the human body"
+		/>
+		<CheckBoxPreference
+			android:key="ar_chromakey"
+			android:dependency="ar_background"
+			android:title="Automatic Chromakey"
+			android:defaultValue="false"
+			android:summary="Try to detect the dominating color and treat it as background"
+		/>
+		
+	</PreferenceCategory>
+	
 	<PreferenceCategory android:title="@string/tcp_preferences">
 		<CheckBoxPreference
 		    android:key="@string/key_pref_server"
@@ -37,5 +77,19 @@
 		    android:title="@string/remote_port"
 		    android:defaultValue="8082"
 		    android:summary="@string/help_remote_port"/>
+	</PreferenceCategory>
+	
+	<PreferenceCategory android:title="@string/http_preferences">
+		<CheckBoxPreference
+		    android:key="@string/key_pref_http_server"
+		    android:title="@string/start_http_server"
+		    android:defaultValue="true"
+		    android:summary="@string/help_start_http_server"
+		    />
+		<EditTextPreference
+		    android:key="@string/key_pref_http_local_port"
+		    android:title="@string/http_local_port"
+		    android:defaultValue="8080"
+		    android:summary="@string/help_http_local_port"/>
 	</PreferenceCategory>
 </PreferenceScreen>

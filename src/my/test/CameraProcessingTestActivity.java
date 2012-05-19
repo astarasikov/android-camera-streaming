@@ -67,7 +67,6 @@ public class CameraProcessingTestActivity extends Activity {
 				surfaceHolder.unlockCanvasAndPost(canvas);
 			}
 		}
-		
 	}
 	
 	final static String LOG_TAG =
@@ -83,9 +82,11 @@ public class CameraProcessingTestActivity extends Activity {
 		return mSharedPreferences.getString(key, defaultValue);
 	}
 	
-	protected int intPreference(int keyId, int defaultValue) {
+	protected int intPreference(int keyId, Integer defaultValue) {
 		String key = getString(keyId);
-		return mSharedPreferences.getInt(key, defaultValue);
+		String stringValue = mSharedPreferences.getString(key,
+				defaultValue.toString());
+		return Integer.valueOf(stringValue);
 	}
 	
 	protected boolean booleanPreference(int keyId, boolean defaultValue) {
@@ -101,7 +102,6 @@ public class CameraProcessingTestActivity extends Activity {
         }
         int localPort =
         		intPreference(R.string.key_pref_local_port, 8082);
-		
         
 		ImageSink tcpServer = null;
 		tcpServer = new TcpUnicastServer(localPort,
@@ -148,9 +148,17 @@ public class CameraProcessingTestActivity extends Activity {
 		
 	protected void startHttp() {
         try {
+        	boolean startHttp =
+        			booleanPreference(R.string.key_pref_http_server, true);
+        	if (!startHttp) {
+        		return;
+        	}
+        	
+        	int httpPort =
+        			intPreference(R.string.key_pref_http_local_port, 8080);
             MotionJpegStreamer mjpgStreamer = new MotionJpegStreamer();
             mImageGraph.addImageSink(mjpgStreamer);
-        	HttpServer srv = new HttpServer(8080);
+        	HttpServer srv = new HttpServer(httpPort);
         	srv.addHandler("video.jpg", mjpgStreamer);
         }
         catch (Exception e) {
