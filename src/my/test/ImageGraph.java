@@ -32,7 +32,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import my.test.image.ImageProcessing;
+import my.test.image.ImageProcessor;
 
 class ImageGraph {
 	public static class Parameters {
@@ -48,7 +48,9 @@ class ImageGraph {
 		}
 	}
 	
-	protected Parameters mParameters;	
+	protected Parameters mParameters = null;
+	protected ImageProcessor mImageProcessor = null;
+	
 	protected boolean mCameraOpened = false;
 	Camera camera = null;
 	
@@ -60,8 +62,9 @@ class ImageGraph {
 			new ThreadPoolExecutor(2, 4, 100,
 					TimeUnit.MILLISECONDS, sinkRunners);
 	
-	public ImageGraph(Parameters parameters)
+	public ImageGraph(Parameters parameters, ImageProcessor imageProcessor)
 	{
+		mImageProcessor = imageProcessor;
 		setParameters(parameters);
 	}
 	
@@ -72,6 +75,10 @@ class ImageGraph {
 	public synchronized void setParameters(Parameters parameters) {
 		this.mParameters = parameters;
 		restart();
+	}
+	
+	public synchronized void setImageProcessor(ImageProcessor imageProcessor) {
+		this.mImageProcessor = imageProcessor;
 	}
 	
 	public synchronized Parameters getParameters() {
@@ -164,8 +171,10 @@ class ImageGraph {
 			@Override
 			public void onFrame(int[] rgbBuffer, int width, int height) {
 				Bitmap bmp = Bitmap.createBitmap(rgbBuffer, width, height,
-						Bitmap.Config.RGB_565);								
-				bmp = ImageProcessing.process(bmp, tmpBuffer, cameraAngle);				
+						Bitmap.Config.RGB_565);
+				if (mImageProcessor != null) {
+					bmp = mImageProcessor.process(bmp, tmpBuffer, cameraAngle);
+				}
 				sendCameraImage(bmp);
 			}
 		});

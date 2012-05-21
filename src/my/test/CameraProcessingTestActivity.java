@@ -1,5 +1,6 @@
 package my.test;
 
+import my.test.image.ImageProcessor;
 import my.test.image.ImageUtils;
 import my.test.net.http.HttpServer;
 import my.test.net.http.MotionJpegStreamer;
@@ -190,8 +191,10 @@ public class CameraProcessingTestActivity extends Activity {
         ImageGraph.Parameters params =
         		new ImageGraph.Parameters(320, 240, false);
         
+        ImageProcessor imageProcessor = new ImageProcessor(this);
+        
         stopServer();
-        mImageGraph = new ImageGraph(params);
+        mImageGraph = new ImageGraph(params, imageProcessor);
        
         VideoView remote = (VideoView)findViewById(R.id.view_remote);
         startNetwork(remote, mImageGraph);
