@@ -4,5 +4,5 @@ import android.graphics.Bitmap;
 
 public interface ImageSink {
 	public void send(Bitmap bitmap) throws Exception;
-	public void teardown();
+	public void close();
 }

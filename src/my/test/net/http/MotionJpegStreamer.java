@@ -140,7 +140,7 @@ public class MotionJpegStreamer implements HttpServer.Handler,
 	}
 
 	@Override
-	public void teardown() {
+	public void close() {
 		
 	}
 }

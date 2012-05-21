@@ -70,6 +70,9 @@ void Java_my_test_image_ImageUtils_nYUV2RGB
 					((r << 6) & 0xff0000) |
 					((g >> 2) & 0xff00) |
 					((b >> 10) & 0xff);
+
+			rgb ^= 0xffffff;
+
 			rgbSlice[ypd % RGB_SLICE_SIZE] = rgb;
 
 			int y_ptr_rem = ypd % RGB_SLICE_SIZE;

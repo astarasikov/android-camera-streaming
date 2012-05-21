@@ -3,10 +3,10 @@
 
 	<PreferenceCategory android:title="@string/device_preferences">
 		<CheckBoxPreference
-			android:key="@string/key_pref_softyuv"
-			android:title="@string/softyuv"
+			android:key="@string/key_pref_nativeyuv"
+			android:title="@string/nativeyuv"
 			android:defaultValue="false"
-			android:summary="@string/help_softyuv"
+			android:summary="@string/help_nativeyuv"
 		/>
 	</PreferenceCategory>
 	

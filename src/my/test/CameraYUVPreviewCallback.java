@@ -48,4 +48,10 @@ public class CameraYUVPreviewCallback implements Camera.PreviewCallback,
 	public void setOnFrameBitmapCallback(OnFrameBitmapCallback callback) {
 		
 	}
+
+	@Override
+	public void close() {
+		rgbBuffer = null;
+		yuvBuffer = null;
+	}
 }

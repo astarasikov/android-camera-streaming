@@ -13,4 +13,6 @@ public interface ImageSource {
 	public static interface OnFrameBitmapCallback {
 		public void onFrame(Bitmap bitmap);
 	}
+	
+	public void close();
 }

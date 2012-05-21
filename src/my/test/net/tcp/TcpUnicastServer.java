@@ -88,7 +88,13 @@ public class TcpUnicastServer implements ImageSink {
 	}
 	
 	@Override
-	public void teardown() {
+	public synchronized void close() {
+		try {
+			mServerSocket.close();
+		} catch (IOException e) {
+			Log.d(LOG_TAG, "failed to close the socket", e);
+		}
+		
 		if (mAcceptorThread == null) {
 			return;
 		}
@@ -101,12 +107,6 @@ public class TcpUnicastServer implements ImageSink {
 			mAcceptorThread.join();
 		} catch (InterruptedException e) {
 			Log.d(LOG_TAG, "failed to wait for thread completion", e);
-		}
-		
-		try {
-			mServerSocket.close();
-		} catch (IOException e) {
-			Log.d(LOG_TAG, "failed to close the socket", e);
 		}
 	}
 }

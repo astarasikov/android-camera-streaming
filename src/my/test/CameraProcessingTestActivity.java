@@ -1,9 +1,11 @@
 package my.test;
 
+import my.test.image.ImageUtils;
 import my.test.net.http.HttpServer;
 import my.test.net.http.MotionJpegStreamer;
 import my.test.net.tcp.TcpUnicastClient;
 import my.test.net.tcp.TcpUnicastServer;
+import my.test.utils.PreferenceHelper;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,6 +27,22 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ToggleButton;
 
 public class CameraProcessingTestActivity extends Activity {
+	static {
+		Log.i("NATIVE", "loading dsp-jni");
+		System.loadLibrary("dsp-jni");
+	}
+	
+	static void drawBitmap(Bitmap bitmap, VideoView videoView) {
+		if (bitmap == null || videoView == null) {
+			return;
+		}
+		
+		SurfaceHolder surfaceHolder = videoView.getHolder();
+		Canvas canvas = surfaceHolder.lockCanvas();		
+		canvas.drawBitmap(bitmap, 0, 0, null);
+		surfaceHolder.unlockCanvasAndPost(canvas);	
+	}
+	
 	static class VideoViewSink implements ImageSink {
 		VideoView videoView;
 		
@@ -34,14 +52,11 @@ public class CameraProcessingTestActivity extends Activity {
 		
 		@Override
 		public void send(Bitmap bitmap) throws Exception {
-			SurfaceHolder surfaceHolder = videoView.getHolder();
-			Canvas canvas = surfaceHolder.lockCanvas();		
-			canvas.drawBitmap(bitmap, 0, 0, null);
-			surfaceHolder.unlockCanvasAndPost(canvas);
+			drawBitmap(bitmap, videoView);
 		}
 
 		@Override
-		public void teardown() {			
+		public void close() {
 		}
 	}
 	
@@ -56,16 +71,7 @@ public class CameraProcessingTestActivity extends Activity {
 	
 		@Override
 		public void onFrame(Bitmap bitmap) {
-			if (bitmap == null) {
-				return;
-			}
-			
-			synchronized(ImageGraph.class) {
-				SurfaceHolder surfaceHolder = videoView.getHolder();
-				Canvas canvas = surfaceHolder.lockCanvas();		
-				canvas.drawBitmap(bitmap, 0, 0, null);
-				surfaceHolder.unlockCanvasAndPost(canvas);
-			}
+			drawBitmap(bitmap, videoView);
 		}
 	}
 	
@@ -74,34 +80,19 @@ public class CameraProcessingTestActivity extends Activity {
 	
 	CameraProcessingTestActivity this_activity = this;
 	ImageGraph mImageGraph;
-	
-	SharedPreferences mSharedPreferences;
-	
-	protected String stringPreference(int keyId, String defaultValue) {
-		String key = getString(keyId);
-		return mSharedPreferences.getString(key, defaultValue);
-	}
-	
-	protected int intPreference(int keyId, Integer defaultValue) {
-		String key = getString(keyId);
-		String stringValue = mSharedPreferences.getString(key,
-				defaultValue.toString());
-		return Integer.valueOf(stringValue);
-	}
-	
-	protected boolean booleanPreference(int keyId, boolean defaultValue) {
-		String key = getString(keyId);
-		return mSharedPreferences.getBoolean(key, defaultValue);
-	}
+	PreferenceHelper mPreferenceHelper;
+
 	
 	protected void startNetworkServer() throws Exception {
         boolean startServer =
-        		booleanPreference(R.string.key_pref_server, true);
+        		mPreferenceHelper
+        			.booleanPreference(R.string.key_pref_server, true);
         if (!startServer) {
         	return;
         }
         int localPort =
-        		intPreference(R.string.key_pref_local_port, 8082);
+        		mPreferenceHelper
+        			.intPreference(R.string.key_pref_local_port, 8082);
         
 		ImageSink tcpServer = null;
 		tcpServer = new TcpUnicastServer(localPort,
@@ -111,16 +102,18 @@ public class CameraProcessingTestActivity extends Activity {
 	
 	protected void startNetworkClient(VideoView videoView) throws Exception {
         boolean startClient =
-        		booleanPreference(R.string.key_pref_client, true);
+        		mPreferenceHelper
+        			.booleanPreference(R.string.key_pref_client, true);
         if (!startClient) {
         	return;
         }
 		TcpUnicastClient tcpClient = null;
         String remoteAddr =
-        		stringPreference(R.string.key_pref_remote_addr,
+        		mPreferenceHelper.stringPreference(R.string.key_pref_remote_addr,
         				"127.0.0.1");
 		int remotePort =
-        		intPreference(R.string.key_pref_remote_port, 8082);
+        		mPreferenceHelper
+        			.intPreference(R.string.key_pref_remote_port, 8082);
 		
 		tcpClient = new TcpUnicastClient();
 		tcpClient.connect(remoteAddr, remotePort);
@@ -149,13 +142,15 @@ public class CameraProcessingTestActivity extends Activity {
 	protected void startHttp() {
         try {
         	boolean startHttp =
-        			booleanPreference(R.string.key_pref_http_server, true);
+        			mPreferenceHelper
+        				.booleanPreference(R.string.key_pref_http_server, true);
         	if (!startHttp) {
         		return;
         	}
         	
         	int httpPort =
-        			intPreference(R.string.key_pref_http_local_port, 8080);
+        			mPreferenceHelper
+        				.intPreference(R.string.key_pref_http_local_port, 8080);
             MotionJpegStreamer mjpgStreamer = new MotionJpegStreamer();
             mImageGraph.addImageSink(mjpgStreamer);
         	HttpServer srv = new HttpServer(httpPort);
@@ -181,28 +176,39 @@ public class CameraProcessingTestActivity extends Activity {
 		inflater.inflate(R.menu.camera_menu, menu);
 	}
 	
+	protected synchronized void stopServer() {
+        if (mImageGraph != null) {
+        	mImageGraph.teardown();
+        }		
+	}
+	
+	protected synchronized void startServer() {
+        ImageUtils.setUseNative(
+        		mPreferenceHelper.booleanPreference(R.string.key_pref_nativeyuv,
+        				false));
+        
+        ImageGraph.Parameters params =
+        		new ImageGraph.Parameters(320, 240, false);
+        
+        stopServer();
+        mImageGraph = new ImageGraph(params);
+       
+        VideoView remote = (VideoView)findViewById(R.id.view_remote);
+        startNetwork(remote, mImageGraph);
+        startHttp();
+        startLocalPreview();
+	}
+	
 	/** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        mSharedPreferences = 
-        		PreferenceManager.getDefaultSharedPreferences(this);
-        VideoView remote = (VideoView)findViewById(R.id.view_remote);
-        ImageGraph.Parameters params =
-        		new ImageGraph.Parameters(320, 240, false);
-        
-        mImageGraph = new ImageGraph(params);
-        
-        startNetwork(remote, mImageGraph);
-        startHttp();
-        startLocalPreview();
-                
+        mPreferenceHelper = new PreferenceHelper(this);
+                        
         ((Button)findViewById(R.id.pref_button)).
         	setOnClickListener(preferencesListener);
-        ((Button)findViewById(R.id.focus_button)).
-        	setOnClickListener(focusListener);        
         ((ToggleButton)findViewById(R.id.switch_streaming)).
         	setOnCheckedChangeListener(streamingListener);        
         ((ToggleButton)findViewById(R.id.switch_camera)).
@@ -221,6 +227,9 @@ public class CameraProcessingTestActivity extends Activity {
 		
 		@Override
 		public void onClick(View v) {
+			if (mImageGraph == null) {
+				return;
+			}
 			mImageGraph.focus();
 		}
 	};
@@ -233,15 +242,19 @@ public class CameraProcessingTestActivity extends Activity {
 				boolean isChecked)
 		{
 			if (isChecked) {
-				mImageGraph.start();
+				startServer();
 			}
 			else {
-				mImageGraph.stop();
+				stopServer();
 			}
 		}
 	};
     
     protected void setUseFrontCamera(boolean enabled) {
+    	if (mImageGraph == null) {
+    		return;
+    	}
+    	
 		ImageGraph.Parameters oldParams = mImageGraph.getParameters();
 		ImageGraph.Parameters params =
 				new ImageGraph.Parameters(

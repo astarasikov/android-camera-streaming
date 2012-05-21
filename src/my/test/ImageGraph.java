@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 import my.test.image.ImageProcessing;
 
-class ImageGraph implements SurfaceHolder.Callback {
+class ImageGraph {
 	public static class Parameters {
 		public final int width;
 		public final int height;
@@ -48,9 +48,7 @@ class ImageGraph implements SurfaceHolder.Callback {
 		}
 	}
 	
-	protected Parameters mParameters;
-	
-	protected boolean mNeedsPreview = false;
+	protected Parameters mParameters;	
 	protected boolean mCameraOpened = false;
 	Camera camera = null;
 	
@@ -67,7 +65,6 @@ class ImageGraph implements SurfaceHolder.Callback {
 		setParameters(parameters);
 	}
 	
-	//FIXME: decide on which class should initiate server connections
 	public ThreadPoolExecutor getExecutor() {
 		return sinkExecutor;
 	}
@@ -91,21 +88,17 @@ class ImageGraph implements SurfaceHolder.Callback {
 	
 	protected synchronized void restart() {
 		stopCamera();
-		if (mNeedsPreview) {
-			startCamera();
+		startCamera();
+	}
+	
+	public synchronized void teardown() {
+		stopCamera();
+		sinkExecutor.purge();
+		for (ImageSink imageSink : imageSinks) {
+			imageSink.close();
 		}
 	}
 
-	public synchronized void start() {
-		mNeedsPreview = true;
-		restart();
-	}
-
-	public synchronized void stop() {
-		mNeedsPreview = false;
-		restart();
-	}
-		
 	public synchronized void focus() {
 		if (!mCameraOpened) {
 			return;
@@ -135,12 +128,14 @@ class ImageGraph implements SurfaceHolder.Callback {
 	}
 	
 	protected void sendCameraImage(Bitmap bitmap) {
-		for (ImageSink sink : imageSinks) {
-			try {
-				sink.send(bitmap);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}	
+		synchronized(imageSinks) {
+			for (ImageSink sink : imageSinks) {
+				try {
+					sink.send(bitmap);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}	
+			}
 		}
 	}
 
@@ -168,11 +163,9 @@ class ImageGraph implements SurfaceHolder.Callback {
 			
 			@Override
 			public void onFrame(int[] rgbBuffer, int width, int height) {
-				ImageProcessing.preProcess(rgbBuffer, tmpBuffer, width, height);				
 				Bitmap bmp = Bitmap.createBitmap(rgbBuffer, width, height,
-						Bitmap.Config.RGB_565);
-								
-				bmp = ImageProcessing.process(bmp, cameraAngle);				
+						Bitmap.Config.RGB_565);								
+				bmp = ImageProcessing.process(bmp, tmpBuffer, cameraAngle);				
 				sendCameraImage(bmp);
 			}
 		});
@@ -189,17 +182,5 @@ class ImageGraph implements SurfaceHolder.Callback {
 		camera.release();
 		camera = null;
 		mCameraOpened = false;
-	}
-
-	public void surfaceCreated(SurfaceHolder sh) {
-		restart();
-	}
-
-	public void surfaceChanged(SurfaceHolder sh, int i, int i1, int i2) {
-		restart();
-	}
-
-	public void surfaceDestroyed(SurfaceHolder sh) {
-		stopCamera();
 	}
 }

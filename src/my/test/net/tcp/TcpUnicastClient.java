@@ -63,6 +63,7 @@ public class TcpUnicastClient implements ImageSource {
 		thread.start();
 	}
 	
+	@Override
 	public synchronized void close() {
 		if (socket == null || socket.isClosed()) {
 			return;
