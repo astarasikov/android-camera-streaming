@@ -54,11 +54,11 @@ public class CameraProcessingTestActivity extends Activity {
 			if (bmpW > bmpH) {
 				//horizontal image
 				dstWidth = viewW;
-				dstHeight = (int)(bmpH * ((1.0 * bmpW) / viewW));
+				dstHeight = (int)(bmpH * ((1.0 * viewW) / bmpW));
 			}
 			else {
 				dstHeight = viewH;
-				dstWidth = (int)(bmpW * ((1.0 * bmpH) / viewH));
+				dstWidth = (int)(bmpW * ((1.0 * viewH) / bmpH));
 			}
 		}
 		else {
@@ -69,7 +69,7 @@ public class CameraProcessingTestActivity extends Activity {
 	}
 	
 	static void drawBitmap(Bitmap bitmap, VideoView videoView) {
-		//bitmap = fitBitmap(bitmap, videoView);
+		bitmap = fitBitmap(bitmap, videoView);
 		
 		if (bitmap == null || videoView == null) {
 			return;
