@@ -8,6 +8,14 @@
 			android:defaultValue="false"
 			android:summary="@string/help_nativeyuv"
 		/>
+		<ListPreference 
+		    android:title="Resolution"
+		    android:summary="Select the resolution of the resulting image"
+		    android:key="@string/key_pref_resolution"
+		    android:defaultValue="1"
+		    android:entries="@array/resolutions"
+		    android:entryValues="@array/resolutions"
+		    />
 	</PreferenceCategory>
 	
 	<PreferenceCategory android:title="Image Preferences">

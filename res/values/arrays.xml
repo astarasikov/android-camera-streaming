@@ -14,4 +14,33 @@
         <item>Sharpen</item>
         <item>Edge detection</item>
     </string-array>
+    
+    <string-array name="resolutions">
+        <item>320x240</item>
+        <item>640x480</item>
+        <item>800x480</item>        
+    </string-array>
+    
+    <string-array name="backgrounds">
+        <item>Desert</item>
+        <item>Sea</item>
+    </string-array>
+    
+    <string-array name="hats">
+        <item>Tall Hat</item>
+        <item>Hard Hat</item>
+    </string-array>
+    
+    <string-array name="faces">
+        <item>Cool Face</item>
+        <item>OK Face</item>
+    </string-array>
+    
+    <string-array name="moustache">
+        <item>Old Sir</item>
+    </string-array>
+    
+    <string-array name="beard">
+        <item>Test</item>
+    </string-array>
 </resources>

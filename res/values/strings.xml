@@ -13,6 +13,7 @@
 	<string name="key_pref_ar_chromakey">key_pref_ar_chromakey</string>
 	<string name="key_pref_dsp_use_filter">key_pref_dsp_use_filter</string>
 	<string name="key_pref_dsp_filter">key_pref_dsp_filter</string>
+	<string name="key_pref_resolution">key_pref_resolution</string>
 	
 	<string name="use_dsp_filter">Filter Image</string>
 	<string name="use_dsp_filter_help">Process image and add visual effects</string>

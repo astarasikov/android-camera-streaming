@@ -37,8 +37,6 @@ public class CameraProcessingTestActivity extends Activity {
 	}
 	
 	static Bitmap fitBitmap(Bitmap bitmap, VideoView videoView) {
-		Bitmap scaled = bitmap;
-		
 		if (bitmap == null || videoView == null) {
 			return bitmap;
 		}
@@ -53,8 +51,8 @@ public class CameraProcessingTestActivity extends Activity {
 		int dstHeight = bmpH;
 		
 		if (bmpW > viewW || bmpH > viewH) {
-			//scale to the largest dimension
 			if (bmpW > bmpH) {
+				//horizontal image
 				dstWidth = viewW;
 				dstHeight = (int)(bmpH * ((1.0 * bmpW) / viewW));
 			}
@@ -121,7 +119,9 @@ public class CameraProcessingTestActivity extends Activity {
 	CameraProcessingTestActivity this_activity = this;
 	ImageGraph mImageGraph;
 	PreferenceHelper mPreferenceHelper;
-
+	
+	int mWidth = 320;
+	int mHeight = 240;
 	
 	final static int defaultNetworkPort = 8082;
 	final static int defaultHttpPort = 8080;
@@ -229,6 +229,15 @@ public class CameraProcessingTestActivity extends Activity {
         }		
 	}
 	
+	protected void getPreferedResolution() {
+		String resolutionString =
+				mPreferenceHelper
+					.stringPreference(R.string.key_pref_resolution, "320x240");
+		String WnH[] = resolutionString.split("x");
+		mWidth = Integer.valueOf(WnH[0]);
+		mHeight = Integer.valueOf(WnH[1]);
+	}
+	
 	protected synchronized void startServer() {
         ImageUtils.setUseNative(
         		mPreferenceHelper.booleanPreference(R.string.key_pref_nativeyuv,
@@ -236,11 +245,13 @@ public class CameraProcessingTestActivity extends Activity {
         
         boolean useFrontCamera = 
             	((ToggleButton)findViewById(R.id.switch_camera)).isChecked();
-        		
-        ImageGraph.Parameters params =
-        		new ImageGraph.Parameters(320, 240, useFrontCamera);
         
-        ImageProcessor imageProcessor = new ImageProcessor(this);
+        getPreferedResolution();
+        ImageGraph.Parameters params =
+        		new ImageGraph.Parameters(mWidth, mHeight, useFrontCamera);
+        
+        ImageProcessor imageProcessor
+        	= new ImageProcessor(this, mPreferenceHelper);
         
         stopServer();
         mImageGraph = new ImageGraph(params, imageProcessor);
@@ -258,6 +269,10 @@ public class CameraProcessingTestActivity extends Activity {
         setContentView(R.layout.main);
         
         mPreferenceHelper = new PreferenceHelper(this);
+        
+        int orientarion
+    	= getWindowManager().getDefaultDisplay().getOrientation();
+    Log.e("FOO", String.format("orientation %d", orientarion));
                         
         ((Button)findViewById(R.id.pref_button)).
         	setOnClickListener(preferencesListener);

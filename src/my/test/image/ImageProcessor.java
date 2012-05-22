@@ -1,6 +1,7 @@
 package my.test.image;
 
 import my.test.R;
+import my.test.utils.PreferenceHelper;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -15,6 +16,12 @@ import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
 
 public class ImageProcessor {
+	class OverlayEffect {
+		
+	}
+	
+	
+	PreferenceHelper mPreferenceHelper;
 	Context mContext;
 	Paint mPaint;
 	int mLastWidth;
@@ -25,8 +32,9 @@ public class ImageProcessor {
 	
 	Bitmap coolFace;
 	
-	public ImageProcessor(Context context) {
+	public ImageProcessor(Context context, PreferenceHelper preferenceHelper) {
 		mContext = context;
+		mPreferenceHelper = preferenceHelper;
 		
 		mPaint = new Paint();
 		mPaint.setColor(Color.CYAN);
@@ -96,14 +104,22 @@ public class ImageProcessor {
 			int x1 = (int)(pf.x + dEyes);
 			int y1 = (int)(pf.y + dEyes);
 			
-			Bitmap cool = Bitmap.createScaledBitmap(
-					coolFace,
-					2 * dEyes,
-					2 * dEyes,
-					false
-					);
+			boolean doProcessing = 
+					mPreferenceHelper.booleanPreference(
+							R.string.key_pref_ar_effects,
+							false
+							);
 			
-			c.drawBitmap(cool, x0, y0, mPaint);			
+			if (doProcessing) {
+				Bitmap cool = Bitmap.createScaledBitmap(
+						coolFace,
+						2 * dEyes,
+						2 * dEyes,
+						false
+						);
+				
+				c.drawBitmap(cool, x0, y0, mPaint);		
+			}
 			c.drawRect(x0, y0, x1, y1, mPaint);
 		}
 		else {
