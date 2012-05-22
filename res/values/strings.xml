@@ -8,6 +8,16 @@
 	<string name="key_pref_remote_port">key_pref_remote_port</string>
    	<string name="key_pref_http_server">key_pref_http_server</string>
 	<string name="key_pref_http_local_port">key_pref_http_local_port</string>
+	<string name="key_pref_ar_effects">key_pref_ar_effects</string>
+	<string name="key_pref_ar_background">key_pref_ar_background</string>
+	<string name="key_pref_ar_chromakey">key_pref_ar_chromakey</string>
+	<string name="key_pref_dsp_use_filter">key_pref_dsp_use_filter</string>
+	<string name="key_pref_dsp_filter">key_pref_dsp_filter</string>
+	
+	<string name="use_dsp_filter">Filter Image</string>
+	<string name="use_dsp_filter_help">Process image and add visual effects</string>
+	<string name="filter_list">List of filters</string>
+	<string name="filter_list_help">Choose one of the filters to be applied to image</string>
 	
     <string name="hello">Hello World, CameraProcessingTestActivity!</string>
     <string name="app_name">CameraProcessingTest</string>

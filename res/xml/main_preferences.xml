@@ -12,15 +12,15 @@
 	
 	<PreferenceCategory android:title="Image Preferences">
 		<CheckBoxPreference
-			android:key="dsp_filter"
-			android:title="Filter Image"
+			android:key="@string/key_pref_dsp_use_filter"
+			android:title="@string/use_dsp_filter"
 			android:defaultValue="false"
-			android:summary="Process image and add visual effects"
+			android:summary="@string/use_dsp_filter_help"
 		/>
 		<ListPreference 
-		    android:title="List of effects"
-		    android:summary="Select one"
-		    android:dependency="dsp_filter"
+		    android:title="@string/filter_list"
+		    android:summary="@string/filter_list_help"
+		    android:dependency="@string/key_pref_dsp_use_filter"
 		    android:key="filter"
 		    android:defaultValue="1"
 		    android:entries="@array/filter_names"

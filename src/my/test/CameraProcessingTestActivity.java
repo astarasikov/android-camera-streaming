@@ -28,19 +28,61 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ToggleButton;
 
 public class CameraProcessingTestActivity extends Activity {
+	final static String LOG_TAG =
+			CameraProcessingTestActivity.class.getSimpleName();
+	
 	static {
-		Log.i("NATIVE", "loading dsp-jni");
+		Log.i(LOG_TAG, "loading dsp-jni");
 		System.loadLibrary("dsp-jni");
 	}
 	
+	static Bitmap fitBitmap(Bitmap bitmap, VideoView videoView) {
+		Bitmap scaled = bitmap;
+		
+		if (bitmap == null || videoView == null) {
+			return bitmap;
+		}
+		
+		int viewW = videoView.getWidth();
+		int viewH = videoView.getHeight();
+		
+		int bmpW = bitmap.getWidth();
+		int bmpH = bitmap.getHeight();
+		
+		int dstWidth = bmpW;
+		int dstHeight = bmpH;
+		
+		if (bmpW > viewW || bmpH > viewH) {
+			//scale to the largest dimension
+			if (bmpW > bmpH) {
+				dstWidth = viewW;
+				dstHeight = (int)(bmpH * ((1.0 * bmpW) / viewW));
+			}
+			else {
+				dstHeight = viewH;
+				dstWidth = (int)(bmpW * ((1.0 * bmpH) / viewH));
+			}
+		}
+		else {
+			return bitmap;
+		}
+		
+		return Bitmap.createScaledBitmap(bitmap, dstWidth, dstHeight, false);		
+	}
+	
 	static void drawBitmap(Bitmap bitmap, VideoView videoView) {
+		//bitmap = fitBitmap(bitmap, videoView);
+		
 		if (bitmap == null || videoView == null) {
 			return;
 		}
 		
+		int left = (videoView.getWidth() - bitmap.getWidth()) / 2;
+		int top = (videoView.getHeight() - bitmap.getHeight()) / 2;
+		
 		SurfaceHolder surfaceHolder = videoView.getHolder();
-		Canvas canvas = surfaceHolder.lockCanvas();		
-		canvas.drawBitmap(bitmap, 0, 0, null);
+		Canvas canvas = surfaceHolder.lockCanvas();
+		canvas.drawBitmap(bitmap, left, top, null);
 		surfaceHolder.unlockCanvasAndPost(canvas);	
 	}
 	
@@ -75,14 +117,14 @@ public class CameraProcessingTestActivity extends Activity {
 			drawBitmap(bitmap, videoView);
 		}
 	}
-	
-	final static String LOG_TAG =
-			CameraProcessingTestActivity.class.getSimpleName();
-	
+		
 	CameraProcessingTestActivity this_activity = this;
 	ImageGraph mImageGraph;
 	PreferenceHelper mPreferenceHelper;
 
+	
+	final static int defaultNetworkPort = 8082;
+	final static int defaultHttpPort = 8080;
 	
 	protected void startNetworkServer() throws Exception {
         boolean startServer =
@@ -93,7 +135,8 @@ public class CameraProcessingTestActivity extends Activity {
         }
         int localPort =
         		mPreferenceHelper
-        			.intPreference(R.string.key_pref_local_port, 8082);
+        			.intPreference(R.string.key_pref_local_port,
+        					defaultNetworkPort);
         
 		ImageSink tcpServer = null;
 		tcpServer = new TcpUnicastServer(localPort,
@@ -114,7 +157,8 @@ public class CameraProcessingTestActivity extends Activity {
         				"127.0.0.1");
 		int remotePort =
         		mPreferenceHelper
-        			.intPreference(R.string.key_pref_remote_port, 8082);
+        			.intPreference(R.string.key_pref_remote_port,
+        					defaultNetworkPort);
 		
 		tcpClient = new TcpUnicastClient();
 		tcpClient.connect(remoteAddr, remotePort);
@@ -151,9 +195,11 @@ public class CameraProcessingTestActivity extends Activity {
         	
         	int httpPort =
         			mPreferenceHelper
-        				.intPreference(R.string.key_pref_http_local_port, 8080);
+        				.intPreference(R.string.key_pref_http_local_port,
+        						defaultHttpPort);
             MotionJpegStreamer mjpgStreamer = new MotionJpegStreamer();
             mImageGraph.addImageSink(mjpgStreamer);
+            
         	HttpServer srv = new HttpServer(httpPort);
         	srv.addHandler("video.jpg", mjpgStreamer);
         }
@@ -188,8 +234,11 @@ public class CameraProcessingTestActivity extends Activity {
         		mPreferenceHelper.booleanPreference(R.string.key_pref_nativeyuv,
         				false));
         
+        boolean useFrontCamera = 
+            	((ToggleButton)findViewById(R.id.switch_camera)).isChecked();
+        		
         ImageGraph.Parameters params =
-        		new ImageGraph.Parameters(320, 240, false);
+        		new ImageGraph.Parameters(320, 240, useFrontCamera);
         
         ImageProcessor imageProcessor = new ImageProcessor(this);
         
