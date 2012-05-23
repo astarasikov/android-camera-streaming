@@ -9,16 +9,16 @@
 			android:summary="@string/help_nativeyuv"
 		/>
 		<ListPreference 
-		    android:title="Resolution"
-		    android:summary="Select the resolution of the resulting image"
+		    android:title="@string/resolution"
+		    android:summary="@string/help_resolution"
 		    android:key="@string/key_pref_resolution"
-		    android:defaultValue="1"
+		    android:defaultValue="320x240"
 		    android:entries="@array/resolutions"
 		    android:entryValues="@array/resolutions"
 		    />
 	</PreferenceCategory>
 	
-	<PreferenceCategory android:title="Image Preferences">
+	<PreferenceCategory android:title="@string/image_effects">
 		<CheckBoxPreference
 			android:key="@string/key_pref_dsp_use_filter"
 			android:title="@string/use_dsp_filter"
@@ -35,24 +35,45 @@
 		    android:entryValues="@array/filter_values"
 		    />
 		<CheckBoxPreference
-			android:key="ar_effects"
-			android:title="AR Effects"
+			android:key="@string/key_ar_effects"
+			android:title="@string/ar_effects"
 			android:defaultValue="false"
-			android:summary="Add visuals to augment the reality"
+			android:summary="@string/help_ar_effects"
 		/>
 		<CheckBoxPreference
-			android:key="ar_background"
-			android:dependency="ar_effects"
-			android:title="Replace background"
+			android:key="@string/key_ar_background"
+			android:dependency="@string/key_ar_effects"
+			android:title="@string/ar_background"
 			android:defaultValue="false"
-			android:summary="Replace the background behing the human body"
+			android:summary="@string/help_ar_background"
 		/>
 		<CheckBoxPreference
-			android:key="ar_chromakey"
-			android:dependency="ar_background"
-			android:title="Automatic Chromakey"
+			android:key="@string/key_ar_hat"
+			android:dependency="@string/key_ar_effects"
+			android:title="@string/ar_hat"
 			android:defaultValue="false"
-			android:summary="Try to detect the dominating color and treat it as background"
+			android:summary="@string/help_ar_hat"
+		/>
+		<CheckBoxPreference
+			android:key="@string/key_ar_coolface"
+			android:dependency="@string/key_ar_effects"
+			android:title="@string/ar_coolface"
+			android:defaultValue="false"
+			android:summary="@string/help_ar_coolface"
+		/>
+		<CheckBoxPreference
+			android:key="@string/key_ar_moustache"
+			android:dependency="@string/key_ar_effects"
+			android:title="@string/ar_moustache"
+			android:defaultValue="false"
+			android:summary="@string/help_ar_moustache"
+		/>
+		<CheckBoxPreference
+			android:key="@string/key_ar_beard"
+			android:dependency="@string/key_ar_effects"
+			android:title="@string/ar_beard"
+			android:defaultValue="false"
+			android:summary="@string/help_ar_beard"
 		/>
 		
 	</PreferenceCategory>

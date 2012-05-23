@@ -21,26 +21,15 @@
         <item>800x480</item>        
     </string-array>
     
-    <string-array name="backgrounds">
+    <string-array name="backrounds">
+        <item>desert</item>
+        <item>sea</item>
+        <item>forest</item>
+    </string-array>
+    
+    <string-array name="background_names">
         <item>Desert</item>
         <item>Sea</item>
-    </string-array>
-    
-    <string-array name="hats">
-        <item>Tall Hat</item>
-        <item>Hard Hat</item>
-    </string-array>
-    
-    <string-array name="faces">
-        <item>Cool Face</item>
-        <item>OK Face</item>
-    </string-array>
-    
-    <string-array name="moustache">
-        <item>Old Sir</item>
-    </string-array>
-    
-    <string-array name="beard">
-        <item>Test</item>
+        <item>Forest</item>
     </string-array>
 </resources>
