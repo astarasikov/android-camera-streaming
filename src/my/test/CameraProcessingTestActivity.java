@@ -10,6 +10,7 @@ import my.test.utils.PreferenceHelper;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Bundle;
@@ -50,19 +51,17 @@ public class CameraProcessingTestActivity extends Activity {
 		int dstWidth = bmpW;
 		int dstHeight = bmpH;
 		
-		if (bmpW > viewW || bmpH > viewH) {
-			if (bmpW > bmpH) {
-				//horizontal image
-				dstWidth = viewW;
-				dstHeight = (int)(bmpH * ((1.0 * viewW) / bmpW));
-			}
-			else {
-				dstHeight = viewH;
-				dstWidth = (int)(bmpW * ((1.0 * viewH) / bmpH));
-			}
-		}
-		else {
+		if (bmpW < viewW && bmpH < viewH) {
 			return bitmap;
+		}
+		
+		if (dstWidth > viewW) {
+			dstWidth = viewW;
+			dstHeight = (int)(bmpH * ((1.0 * viewW) / bmpW));
+		}
+		if (dstHeight > viewH) {
+			dstHeight = viewH;
+			dstWidth = (int)(bmpW * ((1.0 * viewH) / bmpH));
 		}
 		
 		return Bitmap.createScaledBitmap(bitmap, dstWidth, dstHeight, false);		
@@ -119,6 +118,7 @@ public class CameraProcessingTestActivity extends Activity {
 	CameraProcessingTestActivity this_activity = this;
 	ImageGraph mImageGraph;
 	PreferenceHelper mPreferenceHelper;
+	SharedPreferences mSharedPreferences;
 	
 	int mWidth = 320;
 	int mHeight = 240;
@@ -238,24 +238,28 @@ public class CameraProcessingTestActivity extends Activity {
 		mHeight = Integer.valueOf(WnH[1]);
 	}
 	
-	protected synchronized void startServer() {
+	protected synchronized void restartServer() {
         ImageUtils.setUseNative(
         		mPreferenceHelper.booleanPreference(R.string.key_pref_nativeyuv,
         				false));
+        
+        stopServer();
+        boolean shouldStream =
+        		((ToggleButton)findViewById(R.id.switch_streaming)).isChecked();
+        if (!shouldStream) {
+        	return;
+        }
         
         boolean useFrontCamera = 
             	((ToggleButton)findViewById(R.id.switch_camera)).isChecked();
         
         getPreferedResolution();
+        
         ImageGraph.Parameters params =
         		new ImageGraph.Parameters(mWidth, mHeight, useFrontCamera);
-        
         ImageProcessor imageProcessor
         	= new ImageProcessor(this, mPreferenceHelper);
-        
-        stopServer();
         mImageGraph = new ImageGraph(params, imageProcessor);
-       
         VideoView remote = (VideoView)findViewById(R.id.view_remote);
         startNetwork(remote, mImageGraph);
         startHttp();
@@ -268,24 +272,40 @@ public class CameraProcessingTestActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        mPreferenceHelper = new PreferenceHelper(this);
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mPreferenceHelper = new PreferenceHelper(this, mSharedPreferences);
         
-        int orientarion
-    	= getWindowManager().getDefaultDisplay().getOrientation();
-    Log.e("FOO", String.format("orientation %d", orientarion));
-                        
+        mSharedPreferences.registerOnSharedPreferenceChangeListener(
+        		preferenceChangeListener);
+                                
         ((Button)findViewById(R.id.pref_button)).
         	setOnClickListener(preferencesListener);
         ((ToggleButton)findViewById(R.id.switch_streaming)).
         	setOnCheckedChangeListener(streamingListener);        
         ((ToggleButton)findViewById(R.id.switch_camera)).
         	setOnCheckedChangeListener(frontCameraListener);
+        ((VideoView)findViewById(R.id.view_local)).
+        	setOnClickListener(focusListener);
+        ((VideoView)findViewById(R.id.view_remote)).
+        	setOnClickListener(focusListener);
     }
+    
+    OnSharedPreferenceChangeListener preferenceChangeListener = 
+    		new OnSharedPreferenceChangeListener()
+    {	
+		@Override
+		public void onSharedPreferenceChanged(
+				SharedPreferences sharedPreferences, String key)
+		{
+			restartServer();
+		}
+	};
     
     OnClickListener preferencesListener = new OnClickListener() {
 		
 		@Override
 		public void onClick(View v) {
+			stopServer();				
 			startActivity(new Intent(this_activity, CameraPreferences.class));
 		}
 	};
@@ -308,12 +328,7 @@ public class CameraProcessingTestActivity extends Activity {
 		public void onCheckedChanged(CompoundButton buttonView,
 				boolean isChecked)
 		{
-			if (isChecked) {
-				startServer();
-			}
-			else {
-				stopServer();
-			}
+			restartServer();
 		}
 	};
     

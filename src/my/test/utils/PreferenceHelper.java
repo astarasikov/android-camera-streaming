@@ -25,9 +25,10 @@ public class PreferenceHelper {
 		return mSharedPreferences.getBoolean(key, defaultValue);
 	}
 	
-	public PreferenceHelper(Context context) {
+	public PreferenceHelper(Context context,
+			SharedPreferences sharedPreferences)
+	{
 		this.mContext = context;
-		mSharedPreferences =
-				PreferenceManager.getDefaultSharedPreferences(context);        
+		mSharedPreferences = sharedPreferences;
 	}
 }

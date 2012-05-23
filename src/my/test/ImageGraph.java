@@ -163,15 +163,7 @@ class ImageGraph {
 		cameraParameters.setPreviewSize(params.width, params.height);
 		camera.setParameters(cameraParameters);
 		
-		int angle;
-		if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-			angle = (360 - cameraInfo.orientation) % 360;
-		}
-		else {
-			angle = (cameraInfo.orientation + 360) % 360;
-		}
-		
-		final int cameraAngle = angle;
+		final int cameraAngle = cameraInfo.orientation;
 		
 		CameraYUVPreviewCallback cb = new CameraYUVPreviewCallback(camera);
 		cb.setOnFrameCallback(new ImageSource.OnFrameRawCallback() {
