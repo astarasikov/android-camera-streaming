@@ -166,15 +166,15 @@ class ImageGraph {
 		final int cameraAngle = cameraInfo.orientation;
 		
 		CameraYUVPreviewCallback cb = new CameraYUVPreviewCallback(camera);
-		cb.setOnFrameCallback(new ImageSource.OnFrameRawCallback() {
-			int tmpBuffer[] = new int[params.width * params.height];
-			
+		cb.setOnFrameCallback(new ImageSource.OnFrameRawCallback() {			
 			@Override
 			public void onFrame(int[] rgbBuffer, int width, int height) {
 				Bitmap bmp = Bitmap.createBitmap(rgbBuffer, width, height,
 						Bitmap.Config.RGB_565);
 				if (mImageProcessor != null) {
-					bmp = mImageProcessor.process(bmp, tmpBuffer, cameraAngle);
+					Bitmap filtered = mImageProcessor
+							.filter(rgbBuffer, width, height);
+					bmp = mImageProcessor.process(bmp, filtered, cameraAngle);
 				}
 				sendCameraImage(bmp);
 			}

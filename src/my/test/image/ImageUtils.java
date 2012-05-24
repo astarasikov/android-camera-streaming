@@ -126,7 +126,23 @@ public class ImageUtils {
 			}, 3, 3);
 		}
 		
-		public static Kernel2D Sobel() {
+		public static Kernel2D BoxBlur() {
+			return new Kernel2D(new int[] {
+				1, 1, 1,
+				1, 1, 1,
+				1, 1, 1,
+			}, 3, 3);
+		}
+		
+		public static Kernel2D GaussianBlur() {
+			return new Kernel2D(new int[] {
+				1, 1, 1,
+				1, 8, 1,
+				1, 1, 1,
+			}, 3, 3);
+		}
+		
+		public static Kernel2D EdgeDetection() {
 			int matrix[] = new int[] {
 				1, 2, 1,
 				0, 0, 0,
@@ -135,11 +151,19 @@ public class ImageUtils {
 			return new Kernel2D(matrix, 3, 3);
 		}
 		
-		public static Kernel2D Test() {
+		public static Kernel2D Emboss() {
 			return new Kernel2D(new int[] {
-				1, 1, 1,
-				1, -9, 1,
-				1, 1, 1,
+				-1, -1, 0,
+				-1, 0, 1,
+				0, 1, 1,
+			}, 3, 3);
+		}
+		
+		public static Kernel2D Sharpen() {
+			return new Kernel2D(new int[] {
+				-1, -1, -1,
+				-1, 12, -1,
+				-1, -1, -1,
 			}, 3, 3);
 		}
 	}

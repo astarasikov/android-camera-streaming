@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import my.test.R;
+import my.test.image.ImageUtils.Kernel2D;
 import my.test.utils.PreferenceHelper;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -16,6 +17,7 @@ import android.graphics.PointF;
 import android.graphics.Typeface;
 import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
+import android.util.Log;
 
 public class ImageProcessor {
 	PreferenceHelper mPreferenceHelper;
@@ -29,9 +31,12 @@ public class ImageProcessor {
 	
 	FaceDetector mFaceDetector;
 	Face mFaces[];
-	
 	List<FaceOverlayEffect> mFaceEffects;
 
+	int mFilterBuffer[];
+	boolean mFilter;
+	Kernel2D mFilterKernel;
+	
 	void initFaceEffects() {
 		List<FaceOverlayEffect> effects = new ArrayList<FaceOverlayEffect>(4);
 		
@@ -59,6 +64,30 @@ public class ImageProcessor {
 		mFaceEffects = effects;
 	}
 	
+	void initFilter() {
+		mFilter = mPreferenceHelper.booleanPreference(
+				R.string.key_pref_dsp_use_filter, true);
+		String filter = mPreferenceHelper.stringPreference(
+				R.string.key_pref_dsp_filter,
+				"gaussian-blur");
+						
+		if (filter.equals("gaussian-blur")) {
+			mFilterKernel = Kernel2D.GaussianBlur();
+		}
+		else if (filter.equals("box-blur")) {
+			mFilterKernel = Kernel2D.BoxBlur();
+		}
+		else if (filter.equals("emboss")) {
+			mFilterKernel = Kernel2D.Emboss();		
+		}
+		else if (filter.equals("sharpen")) {
+			mFilterKernel = Kernel2D.Sharpen();
+		}
+		else if (filter.equals("edge-detection")) {
+			mFilterKernel = Kernel2D.EdgeDetection();
+		}
+	}
+	
 	public ImageProcessor(Context context, PreferenceHelper preferenceHelper) {
 		mContext = context;
 		mPreferenceHelper = preferenceHelper;
@@ -76,6 +105,7 @@ public class ImageProcessor {
 		mPaint.setTypeface(Typeface.DEFAULT_BOLD);
 		
 		initFaceEffects();
+		initFilter();
 	}
 	
 	protected void reallocFaceDetector(int newWidth, int newHeight) {
@@ -95,12 +125,16 @@ public class ImageProcessor {
 		mFaces = new Face[mMaxFaces];
 	}
 	
-	Bitmap processArEffects(Bitmap bitmap) {
+	Bitmap removeBackground() {
+		return null;
+	}
+	
+	Bitmap processArEffects(Bitmap bitmap, Bitmap filtered) {
 		int width = bitmap.getWidth();
 		int height = bitmap.getHeight();
 		reallocFaceDetector(width, height);
 		
-		Canvas c = new Canvas(bitmap);
+		Canvas c = new Canvas(filtered);
 		
 		int numFaces = mFaceDetector.findFaces(bitmap, mFaces);
 		for (int i = 0; i < numFaces; i++) {
@@ -117,26 +151,53 @@ public class ImageProcessor {
 			}
 		}
 
-		return bitmap;
+		return filtered;
 	}
 	
-	public Bitmap process(Bitmap bitmap, int buffer[], int angle) {
-		int width = bitmap.getWidth();
-		int height = bitmap.getHeight();
+	void reallocFilterBuffer(int width, int height) {
+		int length = width * height;
+		if (mFilterBuffer == null || mFilterBuffer.length != length) {
+			mFilterBuffer = new int[length];
+		}
+	}
+	
+	public Bitmap filter(int rgbBuffer[], int width, int height) {
+		if (!mFilter) {
+			return null;
+		}
+		reallocFilterBuffer(width, height);
+		Kernel2D.Convolve2D(mFilterKernel, rgbBuffer, mFilterBuffer,
+				width, height);
+		return Bitmap.createBitmap(mFilterBuffer, width, height,
+				Bitmap.Config.RGB_565);
+	}
+	
+	public Bitmap process(Bitmap original, Bitmap filtered, int angle) {
+		int width = original.getWidth();
+		int height = original.getHeight();
 
 		if (angle != 0) {
 			Matrix m = new Matrix();
 			m.postRotate(angle);
-			bitmap = Bitmap.createBitmap(bitmap, 0, 0,
-					width, height, m, false);			
+			original = Bitmap.createBitmap(original, 0, 0,
+					width, height, m, false);
+			if (filtered != null) {
+				filtered = Bitmap.createBitmap(filtered, 0, 0,
+					width, height, m, false);
+			}
 		}
 		else {
-			bitmap = bitmap.copy(Config.RGB_565, true);
+			original = original.copy(Config.RGB_565, true);
+		}
+		
+		if (filtered == null) {
+			filtered = original;
 		}
 		
 		if (mArEffects) {
-			bitmap = processArEffects(bitmap);
+			filtered = processArEffects(original, filtered);
 		}
-		return bitmap;		
+				
+		return filtered;		
 	}
 }

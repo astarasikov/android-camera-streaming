@@ -29,7 +29,7 @@
 		    android:title="@string/filter_list"
 		    android:summary="@string/filter_list_help"
 		    android:dependency="@string/key_pref_dsp_use_filter"
-		    android:key="filter"
+		    android:key="@string/key_pref_dsp_filter"
 		    android:defaultValue="1"
 		    android:entries="@array/filter_names"
 		    android:entryValues="@array/filter_values"
