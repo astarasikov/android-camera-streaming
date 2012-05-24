@@ -69,18 +69,79 @@ public class ImageProcessor {
 				Canvas canvas, Paint paint)
 		{
 			int newSize = (int)(2.5 * dEyes);
-			int shift = (int)(1.25 * dEyes);
+			int shiftX = (int)(1.25 * dEyes);
+			int shiftY = (int)(dEyes);
+			
 			Bitmap face = fetchBitmap(newSize, newSize);
-			canvas.drawBitmap(face, x - shift, y - shift, paint);		
+			canvas.drawBitmap(face, x - shiftX, y - shiftY, paint);		
 		}
-		
 	}
 	
+	static class BeardEffect extends FaceOverlayEffect {
+		public BeardEffect(Context context) {
+			initialize(R.drawable.beard, context);
+		}
+		
+		@Override
+		public void process(
+				int x, int y, int dEyes,
+				Canvas canvas, Paint paint)
+		{
+			int newSize = (int)(2 * dEyes);
+			int shiftX = (int)(-1 * dEyes);
+			int shiftY = (int)(1.15 * dEyes);
+			
+			Bitmap face = fetchBitmap(newSize, newSize);
+			canvas.drawBitmap(face, x + shiftX, y + shiftY, paint);		
+		}
+	}
+	
+	static class HatEffect extends FaceOverlayEffect {
+		public HatEffect(Context context) {
+			initialize(R.drawable.hat, context);
+		}
+		
+		@Override
+		public void process(
+				int x, int y, int dEyes,
+				Canvas canvas, Paint paint)
+		{
+			int newSize = (int)(3.0 * dEyes);
+			int shiftX = (int)(1.5 * dEyes);
+			int shiftY = (int)(-3.5 * dEyes);
+
+			Bitmap face = fetchBitmap(newSize, newSize);
+			canvas.drawBitmap(face, x - shiftX, y + shiftY, paint);		
+		}
+	}
+	
+	static class MoustacheEffect extends FaceOverlayEffect {
+		public MoustacheEffect(Context context) {
+			initialize(R.drawable.moustache, context);
+		}
+		
+		@Override
+		public void process(
+				int x, int y, int dEyes,
+				Canvas canvas, Paint paint)
+		{
+			int newSizeX = (int)(2.0 * dEyes);
+			int newSizeY = (int)(0.50 * dEyes);
+			
+			int shiftX = (int)(-1.0 * dEyes);
+			int shiftY = (int)(0.40 * dEyes);
+
+			Bitmap face = fetchBitmap(newSizeX, newSizeY);
+			canvas.drawBitmap(face, x + shiftX, y + shiftY, paint);		
+		}
+	}
+
 	PreferenceHelper mPreferenceHelper;
 	Context mContext;
 	Paint mPaint;
 	int mLastWidth;
 	int mLastHeight;
+	int mMaxFaces;
 	
 	boolean mArEffects;
 	
@@ -97,6 +158,21 @@ public class ImageProcessor {
 		{
 			effects.add(new FaceEffect(mContext));
 		}
+		if (mPreferenceHelper.booleanPreference(R.string.key_ar_hat,
+				false))
+		{
+			effects.add(new HatEffect(mContext));
+		}
+		if (mPreferenceHelper.booleanPreference(R.string.key_ar_beard,
+				false))
+		{
+			effects.add(new BeardEffect(mContext));
+		}
+		if (mPreferenceHelper.booleanPreference(R.string.key_ar_moustache,
+				false))
+		{
+			effects.add(new MoustacheEffect(mContext));
+		}
 	
 		mFaceEffects = effects;
 	}
@@ -107,6 +183,8 @@ public class ImageProcessor {
 		
 		mArEffects = mPreferenceHelper.booleanPreference
 				(R.string.key_ar_effects, false);
+		mMaxFaces = mPreferenceHelper.intPreference
+				(R.string.key_ar_max_faces, 1);
 		
 		mPaint = new Paint();
 		mPaint.setColor(Color.CYAN);
@@ -131,8 +209,8 @@ public class ImageProcessor {
 		mLastWidth = newWidth;
 		mLastHeight = newHeight;
 		
-		mFaceDetector = new FaceDetector(mLastWidth, mLastHeight, 1);
-		mFaces = new Face[1];
+		mFaceDetector = new FaceDetector(mLastWidth, mLastHeight, mMaxFaces);
+		mFaces = new Face[mMaxFaces];
 	}
 	
 	Bitmap processArEffects(Bitmap bitmap) {
@@ -141,35 +219,20 @@ public class ImageProcessor {
 		reallocFaceDetector(width, height);
 		
 		Canvas c = new Canvas(bitmap);
-
-		/* some debugging code to test scaling */
-		c.drawLine(0, 0, width, height, mPaint);
-		c.drawLine(height, 0, width, 0, mPaint);		
-		/* end of scaling code */
 		
 		int numFaces = mFaceDetector.findFaces(bitmap, mFaces);
-		if (numFaces > 0) {
-			Face f = mFaces[0];
+		for (int i = 0; i < numFaces; i++) {
+			Face f = mFaces[i];
 			PointF pf = new PointF();
 			f.getMidPoint(pf);
 
-			c.drawText("Found a face", 0, 0, mPaint);
 			int dEyes = (int)f.eyesDistance();
 			int x = (int)pf.x;
 			int y = (int)pf.y;
-			
-			int x0 = x - dEyes;
-			int y0 = y - dEyes;
-			int x1 = x + dEyes;
-			int y1 = y + dEyes;
-			c.drawRect(x0, y0, x1, y1, mPaint);
 
 			for (FaceOverlayEffect effect : mFaceEffects) {
 				effect.process(x, y, dEyes, c, mPaint);
 			}
-		}
-		else {
-			c.drawText("No faces found", 0, 0, mPaint);
 		}
 
 		return bitmap;
