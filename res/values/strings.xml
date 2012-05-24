@@ -15,6 +15,7 @@
 	<string name="key_pref_dsp_filter">key_pref_dsp_filter</string>
 	<string name="key_pref_resolution">key_pref_resolution</string>
 	<string name="key_ar_effects">key_ar_effects</string>
+	<string name="key_ar_max_faces">key_ar_max_faces</string>
 	<string name="key_ar_background">key_ar_backround</string>
 	<string name="key_ar_hat">key_ar_hat</string>
 	<string name="key_ar_coolface">key_ar_coolface</string>
@@ -25,6 +26,8 @@
 	<string name="help_resolution">Select the resolution of the resulting image</string>
 	<string name="ar_effects">Ar Effects</string>
 	<string name="help_ar_effects">Add visuals to augment the reality</string>
+	<string name="ar_max_faces">Max. face count</string>
+	<string name="help_ar_max_faces">The maximum number of faces in a picture</string>
 	<string name="ar_background">Replace background</string>
 	<string name="help_ar_background">Replace the background behing the human body</string>
 	<string name="ar_hat">Draw a hat</string>

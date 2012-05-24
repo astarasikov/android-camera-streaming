@@ -40,6 +40,13 @@
 			android:defaultValue="false"
 			android:summary="@string/help_ar_effects"
 		/>
+		<EditTextPreference
+		    android:key="@string/key_ar_max_faces"
+		    android:title="@string/ar_max_faces"
+		    android:summary="@string/help_ar_max_faces"
+		    android:defaultValue="1"
+		    android:dependency="@string/key_ar_effects"
+		    />
 		<CheckBoxPreference
 			android:key="@string/key_ar_background"
 			android:dependency="@string/key_ar_effects"
