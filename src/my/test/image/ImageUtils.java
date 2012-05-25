@@ -27,18 +27,6 @@ public class ImageUtils {
 			this.height = height;
 		}
 		
-		public Kernel2D Blur(int radius) {	
-			int matrix[] = new int[radius * radius];
-			for (int i = 0; i < radius; i++) {
-				int rowshift = i * radius;
-				for (int j = 0; j < radius; j++) {
-					int index = rowshift + j;
-					matrix[index] = 1 << (Math.min(i, j));
-				}
-			}
-			return new Kernel2D(matrix, radius, radius);
-		}
-		
 		/**
 		 * Convolves the image with the filter kernel
 		 * @param kernel the convolution filter kernel as a 2d matrix
@@ -110,7 +98,7 @@ public class ImageUtils {
 						green = mask_g & (green / kernel.magnitude);
 						blue = mask_b & (blue / kernel.magnitude);
 					}
-									
+					
 					int result = (0xff << 24) | (red << shift_r)
 							| (green << shift_g) | blue;
 					out[width * i + j] = result;
