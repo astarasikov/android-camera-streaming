@@ -9,6 +9,7 @@ import my.test.utils.PreferenceHelper;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -172,30 +173,32 @@ public class ImageProcessor {
 				Bitmap.Config.RGB_565);
 	}
 	
-	public Bitmap process(Bitmap original, Bitmap filtered, int angle) {
-		int width = original.getWidth();
-		int height = original.getHeight();
-
+	public Bitmap process(int rgbBuffer[], int width, int height, int angle) {
+		Bitmap bitmap = Bitmap.createBitmap(rgbBuffer, width, height,
+				Bitmap.Config.RGB_565);
+		Bitmap filtered = filter(rgbBuffer, width, height);
+		
 		if (angle != 0) {
 			Matrix m = new Matrix();
 			m.postRotate(angle);
-			original = Bitmap.createBitmap(original, 0, 0,
+			bitmap = Bitmap.createBitmap(bitmap, 0, 0,
 					width, height, m, false);
 			if (filtered != null) {
 				filtered = Bitmap.createBitmap(filtered, 0, 0,
-					width, height, m, false);
+						width, height, m, false);
 			}
 		}
 		else {
-			original = original.copy(Config.RGB_565, true);
+			bitmap = bitmap.copy(Config.RGB_565, true);
+			filtered = filtered.copy(Config.RGB_565, true);
 		}
 		
 		if (filtered == null) {
-			filtered = original;
+			filtered = bitmap;
 		}
 		
 		if (mArEffects) {
-			filtered = processArEffects(original, filtered);
+			bitmap = processArEffects(bitmap, filtered);
 		}
 				
 		return filtered;		

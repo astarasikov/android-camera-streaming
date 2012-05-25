@@ -169,14 +169,16 @@ class ImageGraph {
 		cb.setOnFrameCallback(new ImageSource.OnFrameRawCallback() {			
 			@Override
 			public void onFrame(int[] rgbBuffer, int width, int height) {
-				Bitmap bmp = Bitmap.createBitmap(rgbBuffer, width, height,
-						Bitmap.Config.RGB_565);
+				Bitmap bitmap;
 				if (mImageProcessor != null) {
-					Bitmap filtered = mImageProcessor
-							.filter(rgbBuffer, width, height);
-					bmp = mImageProcessor.process(bmp, filtered, cameraAngle);
+					bitmap = mImageProcessor.process(rgbBuffer,
+							width, height, cameraAngle);
 				}
-				sendCameraImage(bmp);
+				else {
+					bitmap = Bitmap.createBitmap(rgbBuffer, width, height,
+							Bitmap.Config.RGB_565);
+				}
+				sendCameraImage(bitmap);
 			}
 		});
 		camera.setPreviewCallback(cb);
