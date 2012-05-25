@@ -16,6 +16,12 @@
 		    android:entries="@array/resolutions"
 		    android:entryValues="@array/resolutions"
 		    />
+		<CheckBoxPreference
+			android:key="@string/key_pref_draw_fps"
+			android:title="@string/draw_fps"
+			android:defaultValue="false"
+			android:summary="@string/help_draw_fps"
+		/>
 	</PreferenceCategory>
 	
 	<PreferenceCategory android:title="@string/image_effects">

@@ -13,6 +13,9 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -37,13 +40,10 @@ public class CameraProcessingTestActivity extends Activity {
 		System.loadLibrary("dsp-jni");
 	}
 	
-	static Bitmap fitBitmap(Bitmap bitmap, VideoView videoView) {
-		if (bitmap == null || videoView == null) {
+	static Bitmap fitBitmap(Bitmap bitmap, int width, int height) {
+		if (bitmap == null) {
 			return bitmap;
 		}
-		
-		int viewW = videoView.getWidth();
-		int viewH = videoView.getHeight();
 		
 		int bmpW = bitmap.getWidth();
 		int bmpH = bitmap.getHeight();
@@ -51,67 +51,102 @@ public class CameraProcessingTestActivity extends Activity {
 		int dstWidth = bmpW;
 		int dstHeight = bmpH;
 		
-		if (bmpW < viewW && bmpH < viewH) {
+		if (bmpW < height && bmpH < height) {
 			return bitmap;
 		}
 		
-		if (dstWidth > viewW) {
-			dstWidth = viewW;
-			dstHeight = (int)(bmpH * ((1.0 * viewW) / bmpW));
+		if (dstWidth > width) {
+			dstWidth = width;
+			dstHeight = (int)(bmpH * ((1.0 * width) / bmpW));
 		}
-		if (dstHeight > viewH) {
-			dstHeight = viewH;
-			dstWidth = (int)(bmpW * ((1.0 * viewH) / bmpH));
+		if (dstHeight > height) {
+			dstHeight = height;
+			dstWidth = (int)(bmpW * ((1.0 * height) / bmpH));
 		}
 		
 		return Bitmap.createScaledBitmap(bitmap, dstWidth, dstHeight, false);		
 	}
 	
-	static void drawBitmap(Bitmap bitmap, VideoView videoView) {
-		bitmap = fitBitmap(bitmap, videoView);
-		
-		if (bitmap == null || videoView == null) {
-			return;
-		}
-		
-		int left = (videoView.getWidth() - bitmap.getWidth()) / 2;
-		int top = (videoView.getHeight() - bitmap.getHeight()) / 2;
-		
-		SurfaceHolder surfaceHolder = videoView.getHolder();
-		Canvas canvas = surfaceHolder.lockCanvas();
-		canvas.drawBitmap(bitmap, left, top, null);
-		surfaceHolder.unlockCanvasAndPost(canvas);	
-	}
-	
-	static class VideoViewSink implements ImageSink {
-		VideoView videoView;
-		
-		public VideoViewSink(VideoView videoView) {
-			this.videoView = videoView;
-		}
-		
-		@Override
-		public void send(Bitmap bitmap) throws Exception {
-			drawBitmap(bitmap, videoView);
-		}
-
-		@Override
-		public void close() {
-		}
-	}
-	
-	static public class DrawBitmapCallback
-		implements ImageSource.OnFrameBitmapCallback
+	static public class VideoViewSink
+		implements ImageSource.OnFrameBitmapCallback,
+		ImageSink
 	{
 		VideoView videoView;
+		long lastFrameTime;
+		boolean drawFps;
+		Paint mPaint;
+		PreferenceHelper mPreferenceHelper;
 		
-		public DrawBitmapCallback(VideoView videoView) {
+		void initFpsCounter() {
+			drawFps = mPreferenceHelper.booleanPreference(
+					R.string.key_pref_draw_fps, false);
+			
+			if (!drawFps) {
+				return;
+			}
+			
+			mPaint = new Paint();
+			mPaint.setColor(Color.GREEN);
+			mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+			mPaint.setTextSize(20);
+			mPaint.setTypeface(Typeface.DEFAULT_BOLD);
+		}
+		
+		public VideoViewSink(VideoView videoView,
+				PreferenceHelper preferenceHelper)
+		{
 			this.videoView = videoView;
+			this.mPreferenceHelper = preferenceHelper;
+			initFpsCounter();
+		}
+		
+		void drawBitmap(Bitmap bitmap) {	
+			if (bitmap == null) {
+				return;
+			}
+			
+			int w = videoView.getWidth();
+			int h = videoView.getHeight();
+			
+			bitmap = fitBitmap(bitmap, w, h);
+			if (bitmap == null) {
+				return;
+			}
+			
+			int left = (w - bitmap.getWidth()) / 2;
+			int top = (h - bitmap.getHeight()) / 2;
+			
+			SurfaceHolder surfaceHolder = videoView.getHolder();
+			Canvas canvas = surfaceHolder.lockCanvas();
+			
+			canvas.drawBitmap(bitmap, left, top, null);
+			
+			if (drawFps) {
+				long timeNow = System.currentTimeMillis();
+				if (lastFrameTime != 0) {
+					float fps = 1000.0f / (timeNow - lastFrameTime);
+					String text = String.format("FPS %.2f", fps);
+					canvas.drawText(text, left + 30, top + 30, mPaint);
+				}
+				lastFrameTime = timeNow;
+			}
+			
+			surfaceHolder.unlockCanvasAndPost(canvas);	
 		}
 	
 		@Override
 		public void onFrame(Bitmap bitmap) {
-			drawBitmap(bitmap, videoView);
+			drawBitmap(bitmap);
+		}
+
+		@Override
+		public void send(Bitmap bitmap) throws Exception {
+			drawBitmap(bitmap);			
+		}
+
+		@Override
+		public void close() {
+			/* nothing to do here */
 		}
 	}
 		
@@ -163,8 +198,8 @@ public class CameraProcessingTestActivity extends Activity {
 		tcpClient = new TcpUnicastClient();
 		tcpClient.connect(remoteAddr, remotePort);
 							
-		DrawBitmapCallback callback =
-				new DrawBitmapCallback(videoView);
+		VideoViewSink callback =
+				new VideoViewSink(videoView, mPreferenceHelper);
 		tcpClient.setOnFrameBitmapCallback(callback);
 	}
 	
@@ -210,7 +245,7 @@ public class CameraProcessingTestActivity extends Activity {
 	
 	protected void startLocalPreview() {
         VideoView local = (VideoView)findViewById(R.id.view_local); 
-        VideoViewSink videoViewSink = new VideoViewSink(local);
+        ImageSink videoViewSink = new VideoViewSink(local, mPreferenceHelper);
         mImageGraph.addImageSink(videoViewSink);
 	}
 	
