@@ -310,9 +310,6 @@ public class CameraProcessingTestActivity extends Activity {
         
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mPreferenceHelper = new PreferenceHelper(this, mSharedPreferences);
-        
-        mSharedPreferences.registerOnSharedPreferenceChangeListener(
-        		preferenceChangeListener);
                                 
         ((Button)findViewById(R.id.pref_button)).
         	setOnClickListener(preferencesListener);
@@ -326,22 +323,13 @@ public class CameraProcessingTestActivity extends Activity {
         	setOnClickListener(focusListener);
     }
     
-    OnSharedPreferenceChangeListener preferenceChangeListener = 
-    		new OnSharedPreferenceChangeListener()
-    {	
-		@Override
-		public void onSharedPreferenceChanged(
-				SharedPreferences sharedPreferences, String key)
-		{
-			restartServer();
-		}
-	};
-    
     OnClickListener preferencesListener = new OnClickListener() {
 		
 		@Override
 		public void onClick(View v) {
-			stopServer();				
+			stopServer();
+			((ToggleButton)findViewById(R.id.switch_streaming))
+				.setChecked(false);
 			startActivity(new Intent(this_activity, CameraPreferences.class));
 		}
 	};

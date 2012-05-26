@@ -53,6 +53,7 @@
 		    android:defaultValue="1"
 		    android:dependency="@string/key_ar_effects"
 		    />
+		<!--
 		<CheckBoxPreference
 			android:key="@string/key_ar_background"
 			android:dependency="@string/key_ar_effects"
@@ -60,6 +61,7 @@
 			android:defaultValue="false"
 			android:summary="@string/help_ar_background"
 		/>
+		-->
 		<CheckBoxPreference
 			android:key="@string/key_ar_hat"
 			android:dependency="@string/key_ar_effects"

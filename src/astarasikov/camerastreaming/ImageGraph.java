@@ -173,7 +173,7 @@ class ImageGraph {
 				}
 				else {
 					bitmap = Bitmap.createBitmap(rgbBuffer, width, height,
-							Bitmap.Config.ARGB_8888);
+							Bitmap.Config.RGB_565);
 				}
 				sendCameraImage(bitmap);
 			}

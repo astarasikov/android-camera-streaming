@@ -64,15 +64,12 @@ public class ImageProcessor {
 	
 	void initFilter() {
 		mFilter = mPreferenceHelper.booleanPreference(
-				R.string.key_pref_dsp_use_filter, true);
+				R.string.key_pref_dsp_use_filter, false);
 		String filter = mPreferenceHelper.stringPreference(
 				R.string.key_pref_dsp_filter,
 				"gaussian-blur");
 						
-		if (filter.equals("gaussian-blur")) {
-			mFilterKernel = Kernel2D.GaussianBlur();
-		}
-		else if (filter.equals("box-blur")) {
+		if (filter.equals("box-blur")) {
 			mFilterKernel = Kernel2D.BoxBlur();
 		}
 		else if (filter.equals("emboss")) {
@@ -83,6 +80,9 @@ public class ImageProcessor {
 		}
 		else if (filter.equals("edge-detection")) {
 			mFilterKernel = Kernel2D.EdgeDetection();
+		}
+		else {
+			mFilterKernel = Kernel2D.GaussianBlur();
 		}
 	}
 	
@@ -123,10 +123,6 @@ public class ImageProcessor {
 		mFaces = new Face[mMaxFaces];
 	}
 	
-	Bitmap removeBackground() {
-		return null;
-	}
-	
 	Bitmap processArEffects(Bitmap bitmap, Bitmap filtered) {
 		int width = bitmap.getWidth();
 		int height = bitmap.getHeight();
@@ -143,6 +139,8 @@ public class ImageProcessor {
 			int dEyes = (int)f.eyesDistance();
 			int x = (int)pf.x;
 			int y = (int)pf.y;
+			
+			c.drawRect(x - dEyes, y - dEyes, x + dEyes, y + dEyes, mPaint);
 
 			for (FaceOverlayEffect effect : mFaceEffects) {
 				effect.process(x, y, dEyes, c, mPaint);
@@ -168,11 +166,11 @@ public class ImageProcessor {
 		Kernel2D.Convolve2D(mFilterKernel, rgbBuffer, mFilterBuffer,
 					width, height);
 		return Bitmap.createBitmap(mFilterBuffer, width, height,
-				Bitmap.Config.ARGB_8888);
+				Bitmap.Config.RGB_565);
 	}
 	
 	public Bitmap process(int rgbBuffer[], int width, int height, int angle) {
-		Bitmap.Config rgbConfig = Bitmap.Config.ARGB_8888;
+		Bitmap.Config rgbConfig = Bitmap.Config.RGB_565;
 		Bitmap bitmap = Bitmap.createBitmap(rgbBuffer, width, height,
 				rgbConfig);
 		Bitmap filtered = filter(rgbBuffer, width, height);
@@ -197,7 +195,7 @@ public class ImageProcessor {
 		}
 		
 		if (mArEffects) {
-			bitmap = processArEffects(bitmap, filtered);
+			filtered = processArEffects(bitmap, filtered);
 		}
 				
 		return filtered;		
