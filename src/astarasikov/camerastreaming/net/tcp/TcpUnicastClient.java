@@ -1,4 +1,4 @@
-package my.test.net.tcp;
+package astarasikov.camerastreaming.net.tcp;
 
 import java.net.Socket;
 
@@ -6,7 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
-import my.test.ImageSource;
+import astarasikov.camerastreaming.ImageSource;
 
 public class TcpUnicastClient implements ImageSource {
 	final static String LOG_TAG = TcpUnicastClient.class.getSimpleName();

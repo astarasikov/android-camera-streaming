@@ -1,4 +1,4 @@
-package my.test.image;
+package astarasikov.camerastreaming.image;
 
 public class ImageUtils {
 	public static class Kernel2D {

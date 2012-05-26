@@ -1,6 +1,6 @@
-package my.test.image;
+package astarasikov.camerastreaming.image;
 
-import my.test.R;
+import astarasikov.camerastreaming.R;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

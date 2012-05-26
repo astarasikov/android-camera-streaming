@@ -1,4 +1,4 @@
-package my.test.net.http;
+package astarasikov.camerastreaming.net.http;
 
 import java.io.BufferedReader;
 import java.io.IOException;

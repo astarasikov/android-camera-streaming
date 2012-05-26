@@ -1,4 +1,4 @@
-package my.test.net.tcp;
+package astarasikov.camerastreaming.net.tcp;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -12,7 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.util.Log;
 
-import my.test.ImageSink;
+import astarasikov.camerastreaming.ImageSink;
 
 public class TcpUnicastServer implements ImageSink {
 	final static String LOG_TAG = TcpUnicastServer.class.getSimpleName();

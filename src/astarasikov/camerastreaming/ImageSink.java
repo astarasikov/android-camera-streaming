@@ -1,4 +1,4 @@
-package my.test;
+package astarasikov.camerastreaming;
 
 import android.graphics.Bitmap;
 

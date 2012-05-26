@@ -1,4 +1,4 @@
-package my.test.utils;
+package astarasikov.camerastreaming.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;

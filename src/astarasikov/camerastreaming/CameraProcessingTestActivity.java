@@ -1,12 +1,12 @@
-package my.test;
+package astarasikov.camerastreaming;
 
-import my.test.image.ImageProcessor;
-import my.test.image.ImageUtils;
-import my.test.net.http.HttpServer;
-import my.test.net.http.MotionJpegStreamer;
-import my.test.net.tcp.TcpUnicastClient;
-import my.test.net.tcp.TcpUnicastServer;
-import my.test.utils.PreferenceHelper;
+import astarasikov.camerastreaming.image.ImageProcessor;
+import astarasikov.camerastreaming.image.ImageUtils;
+import astarasikov.camerastreaming.net.http.HttpServer;
+import astarasikov.camerastreaming.net.http.MotionJpegStreamer;
+import astarasikov.camerastreaming.net.tcp.TcpUnicastClient;
+import astarasikov.camerastreaming.net.tcp.TcpUnicastServer;
+import astarasikov.camerastreaming.utils.PreferenceHelper;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;

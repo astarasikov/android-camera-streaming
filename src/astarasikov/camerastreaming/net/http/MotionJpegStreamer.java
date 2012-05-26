@@ -1,4 +1,4 @@
-package my.test.net.http;
+package astarasikov.camerastreaming.net.http;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -10,7 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.util.Log;
 
-import my.test.ImageSink;
+import astarasikov.camerastreaming.ImageSink;
 
 public class MotionJpegStreamer implements HttpServer.Handler,
 	ImageSink

@@ -1,11 +1,11 @@
-package my.test.image;
+package astarasikov.camerastreaming.image;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import my.test.R;
-import my.test.image.ImageUtils.Kernel2D;
-import my.test.utils.PreferenceHelper;
+import astarasikov.camerastreaming.R;
+import astarasikov.camerastreaming.image.ImageUtils.Kernel2D;
+import astarasikov.camerastreaming.utils.PreferenceHelper;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;

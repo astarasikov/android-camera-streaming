@@ -12,7 +12,7 @@ char getByte(JNIEnv *env, jbyteArray *jary, char *buffer, int idx) {
 	return buffer[bufPtr];
 }
 
-void Java_my_test_image_ImageUtils_nYUV2RGB
+void Java_astarasikov_camerastreaming_image_ImageUtils_nYUV2RGB
 (
 	JNIEnv *env,
 	jobject thiz,

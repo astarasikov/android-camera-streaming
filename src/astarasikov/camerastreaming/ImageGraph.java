@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http ://www.gnu.org/licenses/>.
  */
-package my.test;
+package astarasikov.camerastreaming;
 
 import android.graphics.Bitmap;
 import android.hardware.Camera;
@@ -29,7 +29,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import my.test.image.ImageProcessor;
+import astarasikov.camerastreaming.image.ImageProcessor;
 
 class ImageGraph {
 	public static class Parameters {

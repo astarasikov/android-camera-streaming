@@ -1,6 +1,6 @@
-package my.test;
+package astarasikov.camerastreaming;
 
-import my.test.image.ImageUtils;
+import astarasikov.camerastreaming.image.ImageUtils;
 import android.hardware.Camera;
 
 public class CameraYUVPreviewCallback implements Camera.PreviewCallback,
