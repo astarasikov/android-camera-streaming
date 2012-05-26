@@ -1,7 +1,6 @@
 package my.test.image;
 
 import my.test.R;
-import my.test.R.drawable;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -21,7 +20,7 @@ abstract class FaceOverlayEffect {
 		{
 			int newSize = (int)(2.5 * dEyes);
 			int shiftX = (int)(1.25 * dEyes);
-			int shiftY = (int)(dEyes);
+			int shiftY = (dEyes);
 			
 			Bitmap face = fetchBitmap(newSize, newSize);
 			canvas.drawBitmap(face, x - shiftX, y - shiftY, paint);		
@@ -38,8 +37,8 @@ abstract class FaceOverlayEffect {
 				int x, int y, int dEyes,
 				Canvas canvas, Paint paint)
 		{
-			int newSize = (int)(2 * dEyes);
-			int shiftX = (int)(-1 * dEyes);
+			int newSize = (2 * dEyes);
+			int shiftX = (-1 * dEyes);
 			int shiftY = (int)(1.15 * dEyes);
 			
 			Bitmap face = fetchBitmap(newSize, newSize);

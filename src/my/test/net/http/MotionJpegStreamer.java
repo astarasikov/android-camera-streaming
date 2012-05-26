@@ -9,7 +9,6 @@ import java.util.Map;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.util.Log;
-import android.widget.FrameLayout;
 
 import my.test.ImageSink;
 

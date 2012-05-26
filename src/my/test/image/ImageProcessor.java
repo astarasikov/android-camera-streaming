@@ -8,8 +8,6 @@ import my.test.image.ImageUtils.Kernel2D;
 import my.test.utils.PreferenceHelper;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -18,7 +16,6 @@ import android.graphics.PointF;
 import android.graphics.Typeface;
 import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
-import android.util.Log;
 
 public class ImageProcessor {
 	PreferenceHelper mPreferenceHelper;
@@ -167,15 +164,17 @@ public class ImageProcessor {
 			return null;
 		}
 		reallocFilterBuffer(width, height);
+
 		Kernel2D.Convolve2D(mFilterKernel, rgbBuffer, mFilterBuffer,
-				width, height);
+					width, height);
 		return Bitmap.createBitmap(mFilterBuffer, width, height,
-				Bitmap.Config.RGB_565);
+				Bitmap.Config.ARGB_8888);
 	}
 	
 	public Bitmap process(int rgbBuffer[], int width, int height, int angle) {
+		Bitmap.Config rgbConfig = Bitmap.Config.ARGB_8888;
 		Bitmap bitmap = Bitmap.createBitmap(rgbBuffer, width, height,
-				Bitmap.Config.RGB_565);
+				rgbConfig);
 		Bitmap filtered = filter(rgbBuffer, width, height);
 		
 		if (angle != 0) {
@@ -189,8 +188,8 @@ public class ImageProcessor {
 			}
 		}
 		else {
-			bitmap = bitmap.copy(Config.RGB_565, true);
-			filtered = filtered.copy(Config.RGB_565, true);
+			bitmap = bitmap.copy(rgbConfig, true);
+			filtered = filtered.copy(rgbConfig, true);
 		}
 		
 		if (filtered == null) {

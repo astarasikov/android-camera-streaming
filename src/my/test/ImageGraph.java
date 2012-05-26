@@ -19,11 +19,8 @@
 package my.test;
 
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
-import android.view.SurfaceHolder;
-import android.widget.VideoView;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -176,7 +173,7 @@ class ImageGraph {
 				}
 				else {
 					bitmap = Bitmap.createBitmap(rgbBuffer, width, height,
-							Bitmap.Config.RGB_565);
+							Bitmap.Config.ARGB_8888);
 				}
 				sendCameraImage(bitmap);
 			}

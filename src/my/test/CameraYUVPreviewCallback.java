@@ -2,7 +2,6 @@ package my.test;
 
 import my.test.image.ImageUtils;
 import android.hardware.Camera;
-import android.util.Log;
 
 public class CameraYUVPreviewCallback implements Camera.PreviewCallback,
 	ImageSource

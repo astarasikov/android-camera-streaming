@@ -207,6 +207,7 @@ public class CameraProcessingTestActivity extends Activity {
 			final ImageGraph cameraServer)
 	{
 		new Thread() {
+			@Override
 			public void run() {
 				try {
 					startNetworkServer();
@@ -289,7 +290,7 @@ public class CameraProcessingTestActivity extends Activity {
             	((ToggleButton)findViewById(R.id.switch_camera)).isChecked();
         
         getPreferedResolution();
-        
+                
         ImageGraph.Parameters params =
         		new ImageGraph.Parameters(mWidth, mHeight, useFrontCamera);
         ImageProcessor imageProcessor
