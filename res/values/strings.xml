@@ -49,7 +49,7 @@
 	<string name="filter_list_help">Choose one of the filters to be applied to image</string>
 	
     <string name="hello">Hello World, CameraProcessingTestActivity!</string>
-    <string name="app_name">CameraProcessingTest</string>
+    <string name="app_name">CameraStreaming</string>
     <string name="help_nativeyuv">Use the native library to decode YUV to RGB. Disable this option if you are experiencing problems</string>
 	<string name="streaming_on">Stop Streaming</string>
     <string name="streaming_off">Start Streaming</string>

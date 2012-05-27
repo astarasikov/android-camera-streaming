@@ -54,9 +54,9 @@ import android.widget.VideoView;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ToggleButton;
 
-public class CameraProcessingTestActivity extends Activity {
+public class CameraStreamingActivity extends Activity {
 	final static String LOG_TAG =
-			CameraProcessingTestActivity.class.getSimpleName();
+			CameraStreamingActivity.class.getSimpleName();
 	
 	static {
 		Log.i(LOG_TAG, "loading dsp-jni");
@@ -173,7 +173,7 @@ public class CameraProcessingTestActivity extends Activity {
 		}
 	}
 		
-	CameraProcessingTestActivity this_activity = this;
+	CameraStreamingActivity this_activity = this;
 	ImageGraph mImageGraph;
 	PreferenceHelper mPreferenceHelper;
 	SharedPreferences mSharedPreferences;
