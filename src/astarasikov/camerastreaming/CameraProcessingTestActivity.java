@@ -1,3 +1,23 @@
+/*
+ * This file is part of CameraStreaming application.
+ * CameraStreaming is an application for Android for streaming
+ * video over MJPEG and applying DSP effects like convolution
+ *
+ * Copyright (C) 2012 Alexander Tarasikov <alexander.tarasikov@gmail.com>
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package astarasikov.camerastreaming;
 
 import astarasikov.camerastreaming.image.ImageProcessor;
@@ -20,9 +40,12 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.Display;
 import android.view.MenuInflater;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -290,9 +313,28 @@ public class CameraProcessingTestActivity extends Activity {
             	((ToggleButton)findViewById(R.id.switch_camera)).isChecked();
         
         getPreferedResolution();
-                
+        
+        int screenAngle = 0;
+        WindowManager wm = getWindowManager();
+        Display display = wm.getDefaultDisplay();
+        
+        switch (display.getRotation()) {
+        case Surface.ROTATION_270:
+        	screenAngle = 270;
+        	break;
+        case Surface.ROTATION_180:
+        	screenAngle = 180;
+        	break;
+        case Surface.ROTATION_90:
+        	screenAngle = 90;
+        	break;
+        }
+        
+        screenAngle = 270;
+                        
         ImageGraph.Parameters params =
-        		new ImageGraph.Parameters(mWidth, mHeight, useFrontCamera);
+        		new ImageGraph.Parameters(mWidth,
+        				mHeight, useFrontCamera, screenAngle);
         ImageProcessor imageProcessor
         	= new ImageProcessor(this, mPreferenceHelper);
         mImageGraph = new ImageGraph(params, imageProcessor);
@@ -366,7 +408,8 @@ public class CameraProcessingTestActivity extends Activity {
 				new ImageGraph.Parameters(
 						oldParams.width,
 						oldParams.height,
-						enabled);
+						enabled,
+						oldParams.screenAngle);
 		mImageGraph.setParameters(params);
     }
     

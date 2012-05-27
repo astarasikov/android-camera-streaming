@@ -1,7 +1,9 @@
 /*
- * Class.java
- * 
- * Copyright (c) 2012 Alexander Tarasikov <alexander.tarasikov@gmail.com>. 
+ * This file is part of CameraStreaming application.
+ * CameraStreaming is an application for Android for streaming
+ * video over MJPEG and applying DSP effects like convolution
+ *
+ * Copyright (C) 2012 Alexander Tarasikov <alexander.tarasikov@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,7 +16,7 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http ://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 package astarasikov.camerastreaming;
 
@@ -35,13 +37,15 @@ class ImageGraph {
 	public static class Parameters {
 		public final int width;
 		public final int height;
+		public final int screenAngle;
 		public final boolean frontCamera;
 		
-		public Parameters(int width, int height, boolean front)
+		public Parameters(int width, int height, boolean front, int screenAngle)
 		{
 			this.width = width;
 			this.height = height;
 			this.frontCamera = front;
+			this.screenAngle = screenAngle;
 		}
 	}
 	
@@ -160,7 +164,8 @@ class ImageGraph {
 		cameraParameters.setPreviewSize(params.width, params.height);
 		camera.setParameters(cameraParameters);
 		
-		final int cameraAngle = cameraInfo.orientation;
+		final int cameraAngle = 
+				(cameraInfo.orientation - params.screenAngle) % 360;
 		
 		CameraYUVPreviewCallback cb = new CameraYUVPreviewCallback(camera);
 		cb.setOnFrameCallback(new ImageSource.OnFrameRawCallback() {			
