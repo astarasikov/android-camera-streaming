@@ -36,8 +36,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Display;
@@ -297,6 +299,15 @@ public class CameraStreamingActivity extends Activity {
 		mHeight = Integer.valueOf(WnH[1]);
 	}
 	
+	private final static String uidFroyoSdk = "9774D56D682E549C";
+	protected boolean isRunningOnEmulator() {
+		String androidId = Settings.Secure.ANDROID_ID;
+		return "sdk".equals(Build.PRODUCT) 
+				|| "google_sdk".equals(Build.PRODUCT)
+				|| androidId == null
+				|| androidId == uidFroyoSdk;
+	}
+	
 	protected synchronized void restartServer() {
         ImageUtils.setUseNative(
         		mPreferenceHelper.booleanPreference(R.string.key_pref_nativeyuv,
@@ -330,8 +341,13 @@ public class CameraStreamingActivity extends Activity {
         	break;
         }
         
-        screenAngle = 270;
-                        
+        /*
+         * Camera orientation is somehow effed up on emulator
+         */
+        if (isRunningOnEmulator()) {
+        	screenAngle -= 90;
+        }
+                                
         ImageGraph.Parameters params =
         		new ImageGraph.Parameters(mWidth,
         				mHeight, useFrontCamera, screenAngle);
