@@ -195,6 +195,10 @@ public class ImageProcessor {
 				rgbConfig);
 		Bitmap filtered = filter(rgbBuffer, width, height);
 		
+		if (filtered == null) {
+			filtered = bitmap;
+		}
+		
 		if (angle != 0) {
 			Matrix m = new Matrix();
 			m.postRotate(angle);
@@ -209,11 +213,7 @@ public class ImageProcessor {
 			bitmap = bitmap.copy(rgbConfig, true);
 			filtered = filtered.copy(rgbConfig, true);
 		}
-		
-		if (filtered == null) {
-			filtered = bitmap;
-		}
-		
+				
 		if (mArEffects) {
 			filtered = processArEffects(bitmap, filtered);
 		}
