@@ -15,6 +15,7 @@
 	<string name="key_pref_dsp_filter">key_pref_dsp_filter</string>
 	<string name="key_pref_resolution">key_pref_resolution</string>
 	<string name="key_pref_draw_fps">key_pref_draw_fps</string>
+	<string name="key_pref_use_java_vj">key_pref_use_java_vj</string>
 	<string name="key_ar_effects">key_ar_effects</string>
 	<string name="key_ar_max_faces">key_ar_max_faces</string>
 	<string name="key_ar_background">key_ar_backround</string>
@@ -27,6 +28,8 @@
 	<string name="help_draw_fps">Draw the frames per second count over the video view</string>
 	<string name="resolution">Resolution</string>
 	<string name="help_resolution">Select the resolution of the resulting image</string>
+	<string name="use_java_vj">Java Viola-Jones detector</string>
+	<string name="use_java_vj_help">Use the custom Viola-Jones face detection algorithm instead of the one provided by the Android platform</string>
 	<string name="ar_effects">Ar Effects</string>
 	<string name="help_ar_effects">Add visuals to augment the reality</string>
 	<string name="ar_max_faces">Max. face count</string>

@@ -46,6 +46,14 @@
 			android:defaultValue="false"
 			android:summary="@string/help_ar_effects"
 		/>
+		<CheckBoxPreference
+			android:key="@string/key_pref_use_java_vj"
+			android:title="@string/use_java_vj"
+			android:defaultValue="false"
+			android:summary="@string/use_java_vj_help"
+			android:dependency="@string/key_ar_effects"
+		/>
+		
 		<EditTextPreference
 		    android:key="@string/key_ar_max_faces"
 		    android:title="@string/ar_max_faces"
