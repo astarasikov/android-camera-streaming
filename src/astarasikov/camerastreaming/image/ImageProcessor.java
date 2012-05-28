@@ -25,6 +25,7 @@ import java.util.List;
 
 import astarasikov.camerastreaming.R;
 import astarasikov.camerastreaming.image.ImageUtils.Kernel2D;
+import astarasikov.camerastreaming.image.VJFaceDetector.VJFace;
 import astarasikov.camerastreaming.utils.PreferenceHelper;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -36,8 +37,11 @@ import android.graphics.PointF;
 import android.graphics.Typeface;
 import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
+import android.util.Log;
 
 public class ImageProcessor {
+	final static String LOG_TAG = ImageProcessor.class.getSimpleName();
+	
 	PreferenceHelper mPreferenceHelper;
 	Context mContext;
 	Paint mPaint;
@@ -47,8 +51,13 @@ public class ImageProcessor {
 	
 	boolean mArEffects;
 	
+	boolean mUseJavaVJ;
 	FaceDetector mFaceDetector;
 	Face mFaces[];
+	
+	VJFaceDetector mVJFaceDetector;
+	VJFace mVJFaces[];
+	
 	List<FaceOverlayEffect> mFaceEffects;
 
 	int mFilterBuffer[];
@@ -112,6 +121,8 @@ public class ImageProcessor {
 		
 		mArEffects = mPreferenceHelper.booleanPreference
 				(R.string.key_ar_effects, false);
+		mUseJavaVJ = mPreferenceHelper.booleanPreference
+				(R.string.key_pref_use_java_vj, false);
 		mMaxFaces = mPreferenceHelper.intPreference
 				(R.string.key_ar_max_faces, 1);
 		
@@ -126,7 +137,7 @@ public class ImageProcessor {
 		initFilter();
 	}
 	
-	protected void reallocFaceDetector(int newWidth, int newHeight) {
+	protected void reallocNativeFaceDetector(int newWidth, int newHeight) {
 		if (
 				(mFaceDetector != null)
 				&& (mLastHeight == newHeight)
@@ -143,13 +154,7 @@ public class ImageProcessor {
 		mFaces = new Face[mMaxFaces];
 	}
 	
-	Bitmap processArEffects(Bitmap bitmap, Bitmap filtered) {
-		int width = bitmap.getWidth();
-		int height = bitmap.getHeight();
-		reallocFaceDetector(width, height);
-		
-		Canvas c = new Canvas(filtered);
-		
+	void processNativeFaceDetector(Bitmap bitmap, Canvas canvas) {
 		int numFaces = mFaceDetector.findFaces(bitmap, mFaces);
 		for (int i = 0; i < numFaces; i++) {
 			Face f = mFaces[i];
@@ -160,13 +165,74 @@ public class ImageProcessor {
 			int x = (int)pf.x;
 			int y = (int)pf.y;
 			
-			c.drawRect(x - dEyes, y - dEyes, x + dEyes, y + dEyes, mPaint);
+			canvas.drawRect(x - dEyes, y - dEyes, x + dEyes, y + dEyes, mPaint);
 
 			for (FaceOverlayEffect effect : mFaceEffects) {
-				effect.process(x, y, dEyes, c, mPaint);
+				effect.process(x, y, dEyes, canvas, mPaint);
 			}
 		}
+	}
+	
+	void reallocVJFaceDetector(int newWidth, int newHeight) {
+		if (
+				(mVJFaceDetector != null)
+				&& (mLastHeight == newHeight)
+				&& (mLastWidth == newWidth)
+			)
+		{
+			return;
+		}
+		
+		mLastWidth = newWidth;
+		mLastHeight = newHeight;
+		
+		try {
+			mVJFaceDetector = new VJFaceDetector(mContext, mLastWidth,
+				mLastHeight, mMaxFaces);
+			mVJFaces = new VJFace[mMaxFaces];
+		}
+		catch (Exception e) {
+			Log.e(LOG_TAG, "failed to allocate VJ detector", e);
+			mVJFaceDetector = null;
+			mVJFaces = null;
+		}
+	}
+	
+	void processVJFaceDetector(Bitmap bitmap, Canvas canvas) {
+		if (mVJFaceDetector == null) {
+			return;
+		}
+		
+		int numFaces = mVJFaceDetector.findFaces(bitmap, mVJFaces);
+		for (int i = 0; i < numFaces; i++) {
+			VJFace f = mVJFaces[i];
+			int x = f.centerX;
+			int y = f.centerY;
+			int dEyes = f.eyesDistance;
+			
+			canvas.drawRect(x - dEyes, y - dEyes, x + dEyes, y + dEyes, mPaint);
 
+			for (FaceOverlayEffect effect : mFaceEffects) {
+				effect.process(x, y, dEyes, canvas, mPaint);
+			}
+		}
+	}
+	
+	Bitmap processArEffects(Bitmap bitmap, Bitmap filtered) {
+		int width = bitmap.getWidth();
+		int height = bitmap.getHeight();
+		
+		Canvas c = new Canvas(filtered);
+		
+		if (mUseJavaVJ) {
+			reallocVJFaceDetector(width, height);
+			processVJFaceDetector(bitmap, c);
+		}
+		else {
+			reallocNativeFaceDetector(width, height);
+			processNativeFaceDetector(bitmap, c);
+		}
+		
 		return filtered;
 	}
 	
