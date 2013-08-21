@@ -23,6 +23,7 @@ package astarasikov.camerastreaming;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
+import astarasikov.camerastreaming.image.ImageProcessor;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -30,8 +31,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import astarasikov.camerastreaming.image.ImageProcessor;
 
 class ImageGraph {
 	public static class Parameters {

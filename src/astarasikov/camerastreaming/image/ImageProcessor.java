@@ -20,24 +20,18 @@
  */
 package astarasikov.camerastreaming.image;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import android.content.Context;
+import android.graphics.*;
+import android.media.FaceDetector;
+import android.media.FaceDetector.Face;
+import android.util.Log;
 import astarasikov.camerastreaming.R;
 import astarasikov.camerastreaming.image.ImageUtils.Kernel2D;
 import astarasikov.camerastreaming.image.VJFaceDetector.VJFace;
 import astarasikov.camerastreaming.utils.PreferenceHelper;
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.PointF;
-import android.graphics.Typeface;
-import android.media.FaceDetector;
-import android.media.FaceDetector.Face;
-import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ImageProcessor {
 	final static String LOG_TAG = ImageProcessor.class.getSimpleName();
@@ -55,8 +49,8 @@ public class ImageProcessor {
 	FaceDetector mFaceDetector;
 	Face mFaces[];
 	
-	VJFaceDetector mVJFaceDetector;
-	VJFace mVJFaces[];
+	volatile VJFaceDetector mVJFaceDetector;
+	volatile VJFace mVJFaces[];
 	
 	List<FaceOverlayEffect> mFaceEffects;
 

@@ -20,23 +20,14 @@
  */
 package astarasikov.camerastreaming.net.http;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import android.util.Log;
+
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import android.util.Log;
 
 public class HttpServer {	
 	public static enum ResponseCode {

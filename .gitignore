@@ -3,4 +3,6 @@ bin/*
 libs/*
 obj/*
 gen/*
+*.iml
+out/*
 \.*

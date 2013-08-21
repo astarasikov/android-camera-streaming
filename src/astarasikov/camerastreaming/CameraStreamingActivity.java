@@ -20,6 +20,23 @@
  */
 package astarasikov.camerastreaming;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.*;
+import android.os.Build;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.provider.Settings;
+import android.util.Log;
+import android.view.*;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.ToggleButton;
+import android.widget.VideoView;
 import astarasikov.camerastreaming.image.ImageProcessor;
 import astarasikov.camerastreaming.image.ImageUtils;
 import astarasikov.camerastreaming.net.http.HttpServer;
@@ -27,34 +44,6 @@ import astarasikov.camerastreaming.net.http.MotionJpegStreamer;
 import astarasikov.camerastreaming.net.tcp.TcpUnicastClient;
 import astarasikov.camerastreaming.net.tcp.TcpUnicastServer;
 import astarasikov.camerastreaming.utils.PreferenceHelper;
-import android.app.Activity;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Typeface;
-import android.os.Build;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.provider.Settings;
-import android.util.Log;
-import android.view.ContextMenu;
-import android.view.Display;
-import android.view.MenuInflater;
-import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.View;
-import android.view.WindowManager;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.VideoView;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.ToggleButton;
 
 public class CameraStreamingActivity extends Activity {
 	final static String LOG_TAG =

@@ -20,13 +20,12 @@
  */
 package astarasikov.camerastreaming.net.tcp;
 
-import java.net.Socket;
-
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
-
 import astarasikov.camerastreaming.ImageSource;
+
+import java.net.Socket;
 
 public class TcpUnicastClient implements ImageSource {
 	final static String LOG_TAG = TcpUnicastClient.class.getSimpleName();

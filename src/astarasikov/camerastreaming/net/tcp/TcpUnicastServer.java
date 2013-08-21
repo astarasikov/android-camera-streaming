@@ -20,19 +20,18 @@
  */
 package astarasikov.camerastreaming.net.tcp;
 
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.util.Log;
+import astarasikov.camerastreaming.ImageSink;
+
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.net.Socket;
-
-import android.graphics.Bitmap;
-import android.graphics.Bitmap.CompressFormat;
-import android.util.Log;
-
-import astarasikov.camerastreaming.ImageSink;
 
 public class TcpUnicastServer implements ImageSink {
 	final static String LOG_TAG = TcpUnicastServer.class.getSimpleName();

@@ -20,12 +20,12 @@
  */
 package astarasikov.camerastreaming.image;
 
-import astarasikov.camerastreaming.R;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import astarasikov.camerastreaming.R;
 
 abstract class FaceOverlayEffect {
 	static class CoolFaceEffect extends FaceOverlayEffect {
