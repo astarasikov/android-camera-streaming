@@ -187,6 +187,9 @@ public class VJFaceDetector {
         Document dom = builder.parse(is);
 
         Node storageNode = dom.getFirstChild();
+		while (!storageNode.getNodeName().startsWith("opencv_storage")) {
+			storageNode = storageNode.getNextSibling();
+		}
         NodeList cascades = storageNode.getChildNodes();
         Node cascadeNode = null;
         for (int i = 0; i < cascades.getLength(); i++) {
