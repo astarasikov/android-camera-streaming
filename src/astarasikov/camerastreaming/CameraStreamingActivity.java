@@ -131,8 +131,15 @@ public class CameraStreamingActivity extends Activity {
 			int top = (h - bitmap.getHeight()) / 2;
 			
 			SurfaceHolder surfaceHolder = videoView.getHolder();
+			if (surfaceHolder == null) {
+				return;
+			}
+
 			Canvas canvas = surfaceHolder.lockCanvas();
-			
+			if (canvas == null) {
+				return;
+			}
+
 			canvas.drawBitmap(bitmap, left, top, null);
 			
 			if (drawFps) {
